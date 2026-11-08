@@ -150,6 +150,69 @@ legend{font-size:13px;font-weight:600;color:var(--ink2);padding:0;margin-bottom:
 .loading{padding:60px 0;text-align:center;color:var(--ink3)}
 footer.foot{padding:4px 4px 0;font-size:12px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 footer.foot button{background:none;border:0;color:var(--ink3);text-decoration:underline;cursor:pointer;font-size:12px;padding:4px}
+/* ---- 대상 학년 칩(토글) ---- */
+.tgs{display:flex;flex-wrap:wrap;gap:6px}
+.tg{position:relative}
+.tg input{position:absolute;opacity:0;width:1px;height:1px}
+.tg span{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border-radius:999px;border:1px solid var(--line2);background:#fff;color:var(--ink2);font-size:13.5px;font-weight:600;cursor:pointer;user-select:none;transition:all .15s}
+.tg input:checked + span{background:#0D6A5D;border-color:#0D6A5D;color:#fff}
+.tg input:focus-visible + span{outline:2px solid var(--accent)}
+.gchip{display:inline-flex;padding:2px 9px;border-radius:999px;background:var(--brand-l);color:#0B4848;font-size:12px;font-weight:700}
+/* ---- 학원 탭: 후기 유도 배너 ---- */
+.cta{background:linear-gradient(135deg,var(--brand),#147A70);color:#fff;border-radius:var(--radius);padding:18px 16px;display:flex;flex-direction:column;gap:8px;text-align:center}
+.cta b{font-size:17px;line-height:1.4}.cta .small{opacity:.85}
+.cta .btn{background:#fff;color:var(--brand)}
+.acad .act{flex:none}
+.pick-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow:auto}
+.pick-item{display:flex;justify-content:space-between;gap:8px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);border-radius:12px;background:#fff;padding:10px 12px;cursor:pointer}
+.pick-item:hover,.pick-item.on{border-color:var(--brand);background:var(--brand-l)}
+/* ---- 홈: 분야별 TOP3 ---- */
+.t3-body{display:flex;flex-direction:column;gap:8px;animation:t3in .35s ease}
+@keyframes t3in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.t3-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;cursor:pointer;position:relative;overflow:hidden}
+.t3-item .rk{width:34px;height:34px;border-radius:10px;background:var(--brand-l);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.t3-item.first{border:2px solid var(--accent);background:linear-gradient(135deg,#FFFBEB,#fff)}
+.t3-item.first .rk{background:var(--accent);color:#3D2A05;animation:twinkle 1.6s ease-in-out infinite}
+.t3-item.first::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);transform:skewX(-20deg);animation:shine 2s ease-in-out infinite}
+@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+@keyframes twinkle{0%,100%{box-shadow:0 0 0 0 rgba(242,181,68,.7)}50%{box-shadow:0 0 0 6px rgba(242,181,68,0)}}
+.t3-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.t3-tabs button{flex:none;border:0;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700;background:#EEF1F4;color:var(--ink3);cursor:pointer}
+.t3-tabs button.on{background:var(--brand);color:#fff}
+/* ---- 맞춤 학원 ---- */
+.mt-prog{display:flex;gap:6px}.mt-prog i{flex:1;height:5px;border-radius:3px;background:#E3E8EC}.mt-prog i.on{background:var(--brand)}
+.mt-step{animation:mtin .3s ease}
+@keyframes mtin{from{opacity:0;transform:translateX(24px)}to{opacity:1;transform:none}}
+.mt-opts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.mt-opts.wide{grid-template-columns:1fr}
+.mt-opt{min-height:54px;border:1.5px solid var(--line2);border-radius:14px;background:#fff;font-size:15px;font-weight:700;color:var(--ink);cursor:pointer;transition:transform .12s}
+.mt-opt small{display:block;font-size:12px;font-weight:500;color:var(--ink3)}
+.mt-opt:active{transform:scale(.96)}
+.mt-opt.pick{background:var(--brand);border-color:var(--brand);color:#fff;animation:pop .28s ease}.mt-opt.pick small{color:#D9EFEC}
+@keyframes pop{0%{transform:scale(1)}50%{transform:scale(1.07)}100%{transform:scale(1)}}
+.mt-win{border:2px solid var(--accent);background:linear-gradient(160deg,#FFFBEB,#fff 60%);animation:zzan .6s cubic-bezier(.2,1.4,.4,1)}
+@keyframes zzan{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
+.zzan{font-size:28px;font-weight:800;color:var(--brand);text-align:center;animation:zzan .5s ease}
+/* ---- PC(넓은 화면): 모바일 화면은 그대로, 900px 이상에서만 ---- */
+.home-grid,.detail-grid{display:flex;flex-direction:column;gap:14px}
+.detail-grid > .col{gap:14px}
+@media (min-width:900px){
+  .app{max-width:1200px}
+  nav.tabs{top:0;bottom:0;left:max(0px,calc(50% - 600px));transform:none;width:210px;max-width:none;flex-direction:column;justify-content:flex-start;border-top:0;border-right:1px solid var(--line);padding:84px 10px 0}
+  nav.tabs button{flex:none;flex-direction:row;justify-content:flex-start;gap:12px;min-height:50px;padding:0 16px;border-radius:12px;font-size:15px}
+  nav.tabs button.on{background:var(--brand-l)}
+  .demo-bar,header.top,main{margin-left:210px}
+  header.top{z-index:25;padding:12px 28px}
+  main{padding:24px 32px 48px}
+  .acad-grid{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+  .home-grid > .wide{grid-column:1 / -1}
+  .detail-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);align-items:start}
+  .mt-wrap{max-width:720px;width:100%;margin:0 auto}
+  .mt-opts{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .cta{flex-direction:row;align-items:center;text-align:left;justify-content:space-between}
+  .cta .btn{width:auto;min-width:180px}
+}
 </style>
 </head>
 <body>
@@ -195,6 +258,9 @@ const GRADES = ["미취학(5~7세)","초등 저학년","초등 고학년","중�
 const DAYS = ["월","화","수","목","금","토","일"];
 const PERIODS = ["3개월 미만","3~6개월","6개월~1년","1년 이상"];
 const SHUTTLE = ["운영","일부 지역만","없음","모름"];
+const TGRADES = ["미취학","초1","초2","초3","초4","초5","초6","중1","중2","중3","고1","고2","고3"];   // 학원 대상 학년 (academies.targetGrades)
+const T3_CATS = ["전체","수학","영어","국어","과학","종합","논술","코딩","예체능"];
+const MT_SUBJ = ["수학","영어","국어","과학","코딩","예체능"];
 const COLORS = ["#0F5E5E","#C2410C","#1D4ED8","#7C3AED","#BE185D","#4D7C0F"];
 const OFFICES = [["B10","서울"],["C10","부산"],["D10","대구"],["E10","인천"],["F10","광주"],["G10","대전"],["H10","울산"],["I10","세종"],["J10","경기"],["K10","강원"],["M10","충북"],["N10","충남"],["P10","전북"],["Q10","전남"],["R10","경북"],["S10","경남"],["T10","제주"]];
 const NEIS_URL = "https://open.neis.go.kr/hub/acaInsTiInfo";
@@ -221,6 +287,7 @@ const keys = (o) => Object.keys(o || {});
 const clip = (s, n) => String(s || "").trim().slice(0, n);
 const starText = (n) => { const f = Math.round(n); return `<span class="stars" aria-label="5점 만점에 ${r1(n)}점">${"★".repeat(f)}<span class="off">${"★".repeat(5 - f)}</span></span>`; };
 const icon = {
+  spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.6L20 10l-5.8 1.4L12 17l-2.2-5.6L4 10l5.8-1.4z"/><path d="M19 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>',
   home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v9H4z"/><path d="M10 20v-5h4v5"/></svg>',
   acad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/></svg>',
   car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 16h16v-4l-2-5H6l-2 5z"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>',
@@ -374,15 +441,24 @@ const S = {
   ui: { school: "", cat: "전체", dong: "전체", sort: "rating", q: "", acadTab: "reviews", rankMode: "month", rideAcad: "전체", child: 0, adminTab: "stats", gateMode: "new", reviewFor: "", editReview: null, csv: null }
 };
 const isStaff = () => !!(S.profile && S.profile.staff);
-// 이용 조건: 학원 정보 1개 + 평가 1개. 학원 관계자는 후기를 쓸 수 없으므로 학원 정보 1개만
-const passed = () => !!(S.profile && S.profile.firstLogId && (S.profile.firstReviewId || S.profile.staff));
+// 이용 조건(2026-11-08 변경): 학원 후기 1개. 학원이 없으면 추가 후 후기. 관계자는 후기를 못 쓰므로 학원 정보 1개
+const passed = () => !!(S.profile && (S.profile.staff ? S.profile.firstLogId : S.profile.firstReviewId));
+// 영문 ↔ 한글 읽기 매칭: 'stn' = '에스티엔', 'STN어학원' = '에스티엔어학원'
+const ALPHA = { a: "에이", b: "비", c: "씨", d: "디", e: "이", f: "에프", g: "지", h: "에이치", i: "아이", j: "제이", k: "케이", l: "엘", m: "엠", n: "엔", o: "오", p: "피", q: "큐", r: "알", s: "에스", t: "티", u: "유", v: "브이", w: "더블유", x: "엑스", y: "와이", z: "제트" };
+const korRead = (s) => s.replace(/[a-z]/g, (ch) => ALPHA[ch]);
+const searchKey = (s) => { const b = String(s || "").toLowerCase().replace(/\s/g, ""); return b + "|" + korRead(b) + "|" + korRead(b.replace(/\([^)]*\)/g, "")); };
+function matchQ(a, q) {
+  q = String(q || "").toLowerCase().replace(/\s/g, ""); if (!q) return true;
+  if (!a._k) a._k = searchKey(a.name) + "|" + String(a.address || "").replace(/\s/g, "");
+  return a._k.includes(q) || a._k.includes(korRead(q));
+}
 const STAFF_BADGE = ' <span class="badge" style="background:#FEF3C7;color:#92400E">학원 관계자</span>';
 const isAdminUser = (u) => !!u && (CONFIG.adminEmails.includes(u.email) || (DEMO && u.email === DEMO_ADMIN_EMAIL));
 
 /* ---------- 학원 목록 묶음(인덱스): 접속 1회에 학원 수천 곳을 문서 몇 개로 읽기 ---------- */
 const IDX_CHUNK = 1200;
-const toIdx = (a) => ({ i: a.id, n: a.name || "", c: a.category || "기타", d: a.dong || "", t: clip(a.target, 30), a: clip(a.address, 60), u: a.updatedAt || 0, h: a.hidden ? 1 : 0, x: a.closed ? 1 : 0, s: a.sourceId || "", ...(a.shuttleArea ? { v: clip(a.shuttleArea, 150) } : {}) });
-const fromIdx = (e) => ({ id: e.i, name: e.n, category: e.c, dong: e.d, target: e.t, address: e.a, updatedAt: e.u, hidden: !!e.h, closed: !!e.x, sourceId: e.s, shuttleArea: e.v || "", _idx: true });
+const toIdx = (a) => ({ i: a.id, n: a.name || "", c: a.category || "기타", d: a.dong || "", t: clip(a.target, 30), a: clip(a.address, 60), u: a.updatedAt || 0, h: a.hidden ? 1 : 0, x: a.closed ? 1 : 0, s: a.sourceId || "", ...(a.shuttleArea ? { v: clip(a.shuttleArea, 150) } : {}), ...((a.targetGrades || []).length ? { g: a.targetGrades.join(",") } : {}), ...(a.shuttle && a.shuttle !== "모름" ? { p: a.shuttle } : {}) });
+const fromIdx = (e) => ({ id: e.i, name: e.n, category: e.c, dong: e.d, target: e.t, address: e.a, updatedAt: e.u, hidden: !!e.h, closed: !!e.x, sourceId: e.s, shuttleArea: e.v || "", targetGrades: e.g ? e.g.split(",") : [], shuttle: e.p || "", _idx: true });
 async function loadAcademies() {
   const meta = await BE.db.get("publicIndex", "meta").catch(() => null);
   if (!meta || !meta.chunks) { S.data.acadIndexed = false; S.data.indexMeta = null; return BE.db.list("academies").catch(() => []); }
@@ -409,9 +485,10 @@ async function loadPublic() {
   S.data.full = {};
   const [acs, g, d] = await Promise.all([
     loadAcademies(),
-    BE.db.get("publicIndex", "schools").then((x) => (S.data.schools = (x && x.list) || [])).catch(() => (S.data.schools = [])),
     BE.db.get("stats", "global").catch(() => null),
-    BE.db.get("stats", "d" + ymd()).catch(() => null)
+    BE.db.get("stats", "d" + ymd()).catch(() => null),
+    BE.db.get("publicIndex", "schools").then((x) => (S.data.schools = (x && x.list) || [])).catch(() => (S.data.schools = [])),
+    BE.db.get("publicIndex", "ratings").then((x) => (S.data.ratingsPub = (x && x.list) || [])).catch(() => (S.data.ratingsPub = []))
   ]);
   S.data.academies = acs.filter((a) => !a.hidden || S.admin);
   S.data.stats = g || {}; S.data.today = (d && d.visits) || 0;
@@ -429,7 +506,36 @@ async function loadMember() {
   if (S.admin) tasks.push(BE.db.get("adminSecrets", "neis").then((d) => (S.data.neisKeyServer = (d && d.key) || "")).catch(() => {}));
   await Promise.all(tasks);
 }
-async function refresh() { await loadPublic(); await loadMember(); render(); }
+async function refresh() { await loadPublic(); await loadMember(); if (S.admin) syncRatings(); render(); }
+// 학원별 별점 요약: 회원은 후기로 바로 계산, 비회원은 공개 요약(publicIndex/ratings, 관리자 접속 때 갱신)
+// 요약 한 줄 = [학원id, 종합, 후기수, 성적, 강사, 관리, 학원비, 분위기]
+function ratingMap() {
+  const m = {};
+  if (S.data.reviews.length) {
+    const by = {};
+    S.data.reviews.filter((r) => !r.hidden).forEach((r) => (by[r.academyId] = by[r.academyId] || []).push(r));
+    Object.entries(by).forEach(([id, rs]) => { const per = Object.fromEntries(ITEMS.map(([k]) => [k, avg(rs.map((r) => r.scores?.[k] || 0))])); m[id] = { o: avg(ITEMS.map(([k]) => per[k])), c: rs.length, per }; });
+  } else (S.data.ratingsPub || []).forEach(([id, o, c, ...v]) => (m[id] = { o, c, per: Object.fromEntries(ITEMS.map(([k], i) => [k, v[i] || 0])) }));
+  return m;
+}
+async function syncRatings() {
+  const m = ratingMap(); const r2 = (n) => Math.round(n * 100) / 100;
+  const list = Object.entries(m).map(([id, x]) => [id, r2(x.o), x.c, ...ITEMS.map(([k]) => r2(x.per[k]))]);
+  if (JSON.stringify(list) === JSON.stringify(S.data.ratingsPub || [])) return;   // 바뀐 게 없으면 쓰지 않음
+  try { await BE.db.set("publicIndex", "ratings", { list, builtAt: now() }); S.data.ratingsPub = list; } catch (e) { console.warn("별점 요약 갱신 실패", e); }
+}
+function top3Html() {
+  const i = (S.ui.t3 || 0) % T3_CATS.length, c = T3_CATS[i], rm = S.data._rm || ratingMap();
+  const top = S.data.academies.filter((a) => !a.hidden && rm[a.id] && (c === "전체" || (c === "예체능" ? isArts(a.category) : a.category === c)))
+    .sort((x, y) => rm[y.id].o - rm[x.id].o || rm[y.id].c - rm[x.id].c).slice(0, 3);
+  return `<div class="t3-tabs" role="tablist">${T3_CATS.map((k, j) => `<button role="tab" class="${j === i ? "on" : ""}" aria-selected="${j === i}" data-act="t3" data-i="${j}">${k}</button>`).join("")}</div>
+    <div class="t3-body">${top.map((a, j) => `<button class="t3-item ${j === 0 ? "first" : ""}" data-act="nav" data-v="academy" data-p="${esc(a.id)}"><span class="rk">${j === 0 ? "👑" : j + 1}</span><span class="grow col" style="gap:0"><b class="ellipsis">${j === 0 ? "1위 · " : ""}${esc(a.name)}</b><span class="row small">${starText(rm[a.id].o)} <span class="score">${r1(rm[a.id].o)}</span><span class="muted">후기 ${rm[a.id].c} · ${esc(a.dong || "")}</span></span></span></button>`).join("") || `<div class="empty">${esc(c)} 학원은 아직 평가가 없어요.<br><button class="link" data-act="nav" data-v="academies">첫 후기를 남겨 주세요</button></div>`}</div>`;
+}
+let t3Timer = null;
+function startT3() {
+  clearInterval(t3Timer);
+  t3Timer = setInterval(() => { const box = $("#t3"); if (!box) { clearInterval(t3Timer); return; } S.ui.t3 = ((S.ui.t3 || 0) + 1) % T3_CATS.length; box.innerHTML = top3Html(); }, 2000);
+}
 
 async function countVisit() {
   try {
@@ -484,12 +590,12 @@ function render() {
   const needLogin = ["rides", "rooms", "schedule", "me", "admin", "gate", "onboard", "review"];
   if (needLogin.includes(v) && !S.user) v = "login";
   else if (S.user && !S.profile && v !== "privacy") v = "onboard";
-  else if (S.user && S.profile && !passed() && !S.admin && !["privacy", "me", "gate", "review", "academy"].includes(v)) v = "gate";
+  else if (S.user && S.profile && !passed() && !S.admin && !["privacy", "me", "gate", "review", "academy", "academies", "match"].includes(v)) v = "gate";
   if (v === "admin" && !S.admin) v = "home";
 
-  const views = { home: vHome, academies: vAcademies, academy: vAcademy, rides: vRides, rooms: vRooms, schedule: vSchedule, me: vMe, admin: vAdmin, privacy: vPrivacy, login: vLogin, onboard: vOnboard, gate: vGate, review: vReviewForm };
+  const views = { home: vHome, academies: vAcademies, academy: vAcademy, rides: vRides, rooms: vRooms, match: vMatch, schedule: vSchedule, me: vMe, admin: vAdmin, privacy: vPrivacy, login: vLogin, onboard: vOnboard, gate: vGate, review: vReviewForm };
   const body = (views[v] || vHome)();
-  const tab = { home: "home", academies: "academies", academy: "academies", rides: "rides", rooms: "rooms", schedule: "schedule" }[v] || "";
+  const tab = { home: "home", academies: "academies", academy: "academies", match: "match", rides: "rides", schedule: "schedule" }[v] || "";
   app.innerHTML = `
     ${DEMO ? `<div class="demo-bar"><span><b>데모 모드</b> · Firebase 연결 전, 이 브라우저에만 저장돼요</span><button data-act="demoReset">초기화</button></div>` : ""}
     <header class="top">
@@ -500,11 +606,12 @@ function render() {
       <footer class="foot"><span>© 2026 학딩 · since 2026</span><button data-act="nav" data-v="privacy">개인정보 처리방침</button></footer>
     </main>
     <nav class="tabs" aria-label="주요 메뉴">
-      ${[["home", "홈", icon.home], ["academies", "학원", icon.acad], ["rides", "라이딩", icon.car], ["rooms", "모임", icon.chat], ["schedule", "내 일정", icon.cal]].map(([k, l, i]) => `<button class="${tab === k ? "on" : ""}" data-act="nav" data-v="${k}" ${tab === k ? 'aria-current="page"' : ""}>${i}${l}</button>`).join("")}
+      ${[["home", "홈", icon.home], ["academies", "학원", icon.acad], ["match", "맞춤 학원", icon.spark], ["rides", "라이딩", icon.car], ["schedule", "내 일정", icon.cal]].map(([k, l, i]) => `<button class="${tab === k ? "on" : ""}" data-act="nav" data-v="${k}" ${tab === k ? 'aria-current="page"' : ""}>${i}${l}</button>`).join("")}
     </nav>`;
   afterRender();
 }
 function afterRender() {
+  if ($("#t3")) startT3();
   const q = $("#acadSearch"); if (q && S.ui.focusSearch) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); S.ui.focusSearch = false; }
 }
 
@@ -515,21 +622,25 @@ const statsStrip = () => `
     <div class="stat"><b>${(S.data.stats.members || 0).toLocaleString()}</b><span>회원 수</span></div>
   </div>`;
 
-function acadCard(a, showRating) {
+function acadCard(a, showRating, withCta) {
   const g = showRating ? aggFor(a.id) : null;
-  return `<button class="acad" data-act="nav" data-v="academy" data-p="${esc(a.id)}">
+  const best = g && g.reviews[0];
+  const tg = tgChips(a, 4);
+  return `<div class="acad" role="link" tabindex="0" data-act="nav" data-v="academy" data-p="${esc(a.id)}">
     <div class="ic">${esc(String(a.category || "기타").replace(/\(.*\)/, "").split("·")[0])}</div>
     <div class="grow col" style="gap:2px">
       <span class="ellipsis" style="font-weight:700;font-size:16px">${esc(a.name)}${a.hidden ? ` <span class="badge danger">${a.closed ? "폐원 처리" : "숨김"}</span>` : ""}</span>
-      <span class="small muted ellipsis">${esc(a.dong || "동네 미입력")}${a.target ? " · " + esc(a.target) : ""}</span>
-      ${showRating ? (g.count ? `<span class="row small">${starText(g.overall)} <span class="score">${r1(g.overall)}</span><span class="muted">후기 ${g.count}</span></span>` : `<span class="small muted">아직 후기가 없어요</span>`) : `<span class="row small muted">${icon.lock} 별점·후기는 회원 공개</span>`}
+      <span class="small muted ellipsis">${esc(a.dong || "동네 미입력")}${a.shuttleArea ? " · 🚌 차량" : ""}</span>
+      ${tg && (a.targetGrades || []).length ? `<span class="row wrap" style="gap:4px">${tg}</span>` : ""}
+      ${showRating ? (g.count ? `<span class="row small">${starText(g.overall)} <span class="score">${r1(g.overall)}</span><span class="muted">후기 ${g.count}</span></span>${best ? `<span class="small ellipsis" style="color:var(--ink2)">“${esc(best.summary)}”</span>` : ""}` : `<span class="small muted">아직 후기가 없어요 · 첫 후기를 남겨 주세요</span>`) : `<span class="row small muted">${icon.lock} 별점·후기는 회원 공개</span>`}
     </div>
-  </button>`;
+    ${withCta && !isStaff() ? `<button class="btn sm act" data-act="writeReview" data-id="${esc(a.id)}">평가하기</button>` : ""}
+  </div>`;
 }
 
 /* ---------- 홈 ---------- */
 function vHome() {
-  const acs = S.data.academies;
+  const acs = S.data.academies; S.data._rm = ratingMap();
   if (!S.user || !passed()) {
     return `
     <section class="hero">
@@ -540,20 +651,20 @@ function vHome() {
     </section>
     ${statsStrip()}
     <section class="card">
-      <div class="row between"><h2>등록된 학원 ${acs.length}곳</h2><button class="link" data-act="nav" data-v="academies">전체 보기</button></div>
-      ${acs.slice(0, 4).map((a) => acadCard(a, false)).join("") || `<div class="empty">첫 학원을 등록해 주세요</div>`}
+      <div class="row between"><h2>분야별 학원 TOP 3</h2><button class="link" data-act="nav" data-v="match">맞춤 학원 찾기</button></div>
+      <div id="t3">${top3Html()}</div>
+      <p class="xs muted">학부모 후기 별점 순 · 같으면 후기 많은 순</p>
     </section>
     <section class="card">
       <h2>학딩은 이렇게 운영돼요</h2>
       <div class="col small">
-        <div class="row" style="align-items:flex-start"><span class="badge brand">1</span><span>가입 후 <b>학원 정보 1개</b>와 <b>학원 평가 1개</b>를 남기면 모든 후기와 기능이 열려요. 다 같이 채우는 정보라서요.</span></div>
+        <div class="row" style="align-items:flex-start"><span class="badge brand">1</span><span>가입 후 보내본 학원 <b>후기 1개</b>만 남기면 모든 후기와 기능이 열려요. 학원 기본정보는 이미 채워 두었어요.</span></div>
         <div class="row" style="align-items:flex-start"><span class="badge brand">2</span><span>아이 이름·학교·사진은 받지 않아요. 수집한 정보는 절대 외부에 공유하지 않아요.</span></div>
         <div class="row" style="align-items:flex-start"><span class="badge brand">3</span><span>동네·아파트 모임방 참여코드는 인증된 회원에게만 보여요.</span></div>
         <div class="row" style="align-items:flex-start"><span class="badge brand">4</span><span><b>광고 후기 없음.</b> 학원 관계자는 후기를 쓸 수 없고, 정보를 고치면 '학원 관계자'로 표시돼요. 대가를 받은 홍보 글은 신고되면 바로 숨겨요.</span></div>
       </div>
     </section>`;
   }
-  const top = acs.map((a) => ({ a, g: aggFor(a.id) })).filter((x) => x.g.count).sort((x, y) => y.g.overall - x.g.overall).slice(0, 3);
   const recent = visibleReviews().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
   const rk = ranking(S.ui.rankMode);
   const myRooms = S.data.rooms.filter((r) => r.dong === S.profile.dong || (S.profile.apt && r.name === S.profile.apt));
@@ -562,13 +673,14 @@ function vHome() {
     <section class="col" style="gap:4px;padding:0 2px"><h1>${esc(S.profile.nick)}님, 반가워요</h1><p class="muted small">${esc(S.profile.dong)}${S.profile.apt ? " · " + esc(S.profile.apt) : ""}</p></section>
     ${trouble.length ? `<div class="notice danger">${icon.info}<span><b>오늘 라이딩 변경</b> · ${trouble.map((r) => esc(r.nick) + "님 (" + esc(acadName(r.academyId)) + " " + esc(r.time) + ")").join(", ")}이 오늘 갑자기 힘들다고 알렸어요.</span></div>` : ""}
     ${statsStrip()}
-    <form class="row" style="gap:8px" data-form="homeSearch" role="search">
+    <div class="home-grid">
+    <form class="row wide" style="gap:8px" data-form="homeSearch" role="search">
       <input class="input" name="q" placeholder="학원 이름으로 검색" value="${esc(S.ui.q)}" aria-label="학원 검색">
       <button class="btn" type="submit" style="flex:none;white-space:nowrap">검색</button>
     </form>
     <section class="card">
-      <div class="row between"><h2>별점 높은 학원</h2><button class="link" data-act="nav" data-v="academies">전체</button></div>
-      ${top.map((x) => acadCard(x.a, true)).join("") || `<div class="empty">아직 평가가 없어요</div>`}
+      <div class="row between"><h2>분야별 학원 TOP 3</h2><button class="link" data-act="nav" data-v="match">맞춤 학원</button></div>
+      <div id="t3">${top3Html()}</div>
     </section>
     <section class="card">
       <div class="row between"><h2>이달의 기여 TOP 5</h2>
@@ -583,8 +695,9 @@ function vHome() {
     </section>
     <section class="card">
       <div class="row between"><h2>우리 동네 모임방</h2><button class="link" data-act="nav" data-v="rooms">전체</button></div>
-      ${myRooms.length ? myRooms.map((r) => `<div class="row between"><span style="font-weight:600">${esc(r.name)}</span><button class="btn sm ghost" data-act="nav" data-v="rooms">참여코드 보기</button></div>`).join("") : `<p class="small muted">${esc(S.profile.dong)} 모임방이 아직 없어요. 모임 탭에서 개설을 요청해 주세요.</p>`}
-    </section>`;
+      ${myRooms.length ? myRooms.map((r) => `<div class="row between"><span style="font-weight:600">${esc(r.name)}</span><button class="btn sm ghost" data-act="nav" data-v="rooms">참여코드 보기</button></div>`).join("") : `<p class="small muted">${esc(S.profile.dong)} 모임방이 아직 없어요. <button class="link small" data-act="nav" data-v="rooms">모임방</button>에서 개설을 요청해 주세요.</p>`}
+    </section>
+    </div>`;
 }
 
 /* ---------- 학원 목록 ---------- */
@@ -593,9 +706,10 @@ function acadListData() {
   let list = S.data.academies.slice();
   if (S.ui.cat === "예체능") list = list.filter((a) => isArts(a.category));
   else if (S.ui.cat !== "전체") list = list.filter((a) => a.category === S.ui.cat);
+  if (S.ui.grade && S.ui.grade !== "전체") list = list.filter((a) => (a.targetGrades || []).includes(S.ui.grade));
   if (S.ui.school) { const q = normSchool(S.ui.school); list = list.filter((a) => normSchool(a.shuttleArea).includes(q)); }
   if (S.ui.dong !== "전체") list = list.filter((a) => a.dong === S.ui.dong);
-  if (S.ui.q) list = list.filter((a) => (a.name + " " + (a.address || "")).includes(S.ui.q));
+  if (S.ui.q) list = list.filter((a) => matchQ(a, S.ui.q));
   const withAgg = list.map((a) => ({ a, g: show ? aggFor(a.id) : { count: 0, overall: 0 } }));
   const sorters = { rating: (x, y) => y.g.overall - x.g.overall || y.g.count - x.g.count, count: (x, y) => y.g.count - x.g.count, name: (x, y) => x.a.name.localeCompare(y.a.name, "ko"), recent: (x, y) => (y.a.updatedAt || 0) - (x.a.updatedAt || 0) };
   withAgg.sort(sorters[show ? S.ui.sort : "name"]);
@@ -604,13 +718,14 @@ function acadListData() {
 function acadListHtml() {
   const { show, withAgg } = acadListData();
   return `<p class="small muted" style="padding:0 2px">${withAgg.length}곳</p>
-    <div class="col">${withAgg.slice(0, 300).map((x) => acadCard(x.a, show)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>${withAgg.length > 300 ? `<p class="small muted">검색어나 과목으로 좁혀 주세요 (상위 300곳 표시)</p>` : ""}`;
+    <div class="col acad-grid">${withAgg.slice(0, 300).map((x) => acadCard(x.a, show, true)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>${withAgg.length > 300 ? `<p class="small muted">검색어나 과목으로 좁혀 주세요 (상위 300곳 표시)</p>` : ""}`;
 }
 function vAcademies() {
   const show = S.user && (passed() || S.admin);
   return `
-    <section class="row between" style="padding:0 2px"><h1>학원 정보</h1>${S.user && (passed() || S.admin) ? `<button class="btn sm" data-act="addAcad">학원 추가</button>` : ""}</section>
-    <input id="acadSearch" class="input" placeholder="학원 이름·주소 검색" value="${esc(S.ui.q)}" data-input="search" aria-label="학원 검색">
+    <section class="row between" style="padding:0 2px"><h1>학원 정보</h1>${S.user && (passed() || S.admin) ? `<button class="btn sm ghost" data-act="addAcad">학원 추가</button>` : ""}</section>
+    ${isStaff() ? "" : `<section class="cta"><div class="col" style="gap:4px"><b>보내본 학원, 솔직한 후기를 남겨 주세요</b><span class="small">${esc(CONFIG.giftText)}</span></div><button class="btn lg block" data-act="reviewStart">✍️ 후기 쓰기</button></section>`}
+    <input id="acadSearch" class="input" placeholder="학원 이름 검색 (영문·한글 모두: stn = 에스티엔)" value="${esc(S.ui.q)}" data-input="search" aria-label="학원 검색">
     <div class="chips" role="group" aria-label="과목">${["전체", ...TOP_CATS].map((c) => `<button class="chip ${S.ui.cat === c || (c === "예체능" && ARTS.includes(S.ui.cat)) ? "on" : ""}" data-act="cat" data-c="${c}">${c}</button>`).join("")}</div>
     ${isArts(S.ui.cat) ? `<div class="chips" role="group" aria-label="예체능 세부">${["예체능", ...ARTS].map((c) => `<button class="chip sm ${S.ui.cat === c ? "on" : ""}" data-act="cat" data-c="${c}">${c === "예체능" ? "예체능 전체" : c}</button>`).join("")}</div>` : ""}
     <form class="row" style="gap:8px" data-form="schoolFind" role="search">
@@ -619,7 +734,8 @@ function vAcademies() {
     </form>
     ${schoolDatalist()}
     ${S.ui.school ? `<p class="xs muted" style="padding:0 2px">'${esc(S.ui.school)}'(으)로 차량이 온다고 등록된 학원만 보여요. 아는 학원이 빠져 있으면 학원 정보 수정 › '차량 오는 학교·동'에 채워 주세요.</p>` : ""}
-    <div class="grid2">
+    <div class="grid3">
+      <select class="input" data-input="grade" aria-label="대상 학년">${["전체", ...TGRADES].map((g) => `<option value="${g}" ${(S.ui.grade || "전체") === g ? "selected" : ""}>${g === "전체" ? "학년 전체" : g}</option>`).join("")}</select>
       <select class="input" data-input="dong" aria-label="동네">${["전체", ...dongList()].map((d) => `<option ${S.ui.dong === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
       <select class="input" data-input="sort" aria-label="정렬" ${show ? "" : "disabled"}>${[["rating", "별점 높은 순"], ["count", "후기 많은 순"], ["name", "이름 순"], ["recent", "최근 수정 순"]].map(([k, l]) => `<option value="${k}" ${S.ui.sort === k ? "selected" : ""}>${l}</option>`).join("")}</select>
     </div>
@@ -639,7 +755,7 @@ function vAcademy() {
   const t = S.ui.acadTab;
   let tabBody = "";
   if (!show) {
-    tabBody = `<div class="locked">${icon.lock}<b>별점·후기·학원 이야기는 회원 공개예요</b><span class="small">학원 정보 1개와 평가 1개를 남기면 모두 볼 수 있어요.</span>${S.user ? `<button class="btn" data-act="nav" data-v="gate">기여하러 가기</button>` : `<button class="btn" data-act="login">구글로 시작하기</button>`}</div>`;
+    tabBody = `<div class="locked">${icon.lock}<b>별점·후기·학원 이야기는 회원 공개예요</b><span class="small">보내본 학원 후기 1개만 남기면 모두 볼 수 있어요.</span>${S.user ? `<button class="btn" data-act="nav" data-v="gate">기여하러 가기</button>` : `<button class="btn" data-act="login">구글로 시작하기</button>`}</div>`;
   } else if (t === "reviews") {
     tabBody = g.reviews.map((r) => reviewHtml(r)).join("") || `<div class="empty">첫 후기를 남겨 주세요</div>`;
   } else {
@@ -657,7 +773,7 @@ function vAcademy() {
       <dl class="info">
         <dt>동네</dt><dd>${esc(a.dong || "-")}</dd>
         <dt>주소</dt><dd>${esc(a.address || "-")}</dd>
-        <dt>대상</dt><dd>${esc(a.target || "-")}</dd>
+        <dt>대상</dt><dd>${tgChips(a) || '<span class="muted">정보 없음 · 아시면 수정해 주세요</span>'}</dd>
         <dt>셔틀</dt><dd>${esc(a.shuttle || "모름")}${a.shuttleArea ? `<div class="small">🚌 차량 오는 곳: <b>${esc(a.shuttleArea)}</b></div>` : (a.shuttle === "운영" || a.shuttle === "일부 지역만") ? `<div class="xs muted">어느 학교·동까지 오는지 아시면 정보 수정에 채워 주세요</div>` : ""}</dd>
         <dt>수업 시간</dt><dd>${esc(a.hours || "-")}</dd>
         ${a.phone ? `<dt>전화</dt><dd><a href="tel:${esc(String(a.phone).replace(/[^0-9-]/g, ""))}">${esc(a.phone)}</a></dd>` : ""}
@@ -727,7 +843,10 @@ function acadFormFields(a = {}) {
     <datalist id="dongs">${dongList().map((d) => `<option value="${esc(d)}">`).join("")}</datalist>
     <label class="f">주소 <span class="hint">건물 이름까지만 적어도 돼요</span><input class="input" name="address" maxlength="80" value="${esc(a.address || "")}"></label>
     <label class="f">전화<input class="input" name="phone" maxlength="20" inputmode="tel" value="${esc(a.phone || "")}"></label>
-    <label class="f">대상 학년<input class="input" name="target" maxlength="30" value="${esc(a.target || "")}" placeholder="예: 초5 ~ 중3"></label>
+    <fieldset><legend>대상 학년 <span class="hint" style="font-weight:400">눌러서 켜고 끄기 · 여러 개 선택</span></legend>
+      <div class="tgs" role="group" aria-label="대상 학년">${TGRADES.map((g) => `<label class="tg"><input type="checkbox" name="targetGrades" value="${g}" ${(a.targetGrades || []).includes(g) ? "checked" : ""}><span>${g}</span></label>`).join("")}</div>
+      ${a.target && !(a.targetGrades || []).length ? `<p class="xs muted">예전에 적힌 대상: ${esc(a.target)}</p>` : ""}
+    </fieldset>
     <label class="f">셔틀<select class="input" name="shuttle">${SHUTTLE.map((s) => `<option ${a.shuttle === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
     <label class="f">차량 오는 학교·동 <span class="hint">쉼표로 구분 · 예: 신정초, 옥동초, 삼산동</span><input class="input" name="shuttleArea" maxlength="150" list="schoolList" value="${esc(a.shuttleArea || "")}"></label>
     ${schoolDatalist()}
@@ -772,7 +891,7 @@ function vOnboard() {
 
 /* ---------- 기여 게이트 ---------- */
 function vGate() {
-  const p = S.profile; const s1 = !!p.firstLogId, s2 = !!p.firstReviewId || !!p.staff;
+  const p = S.profile; const s1 = p.staff ? !!p.firstLogId : true, s2 = !!p.firstReviewId || !!p.staff;
   const mode = S.ui.gateMode;
   const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
   let step = "";
@@ -797,13 +916,9 @@ function vGate() {
   return `
     <section class="col" style="gap:6px;padding:0 2px">
       <div class="steps"><i class="on"></i><i class="${s1 ? "on" : ""}"></i><i class="${s2 ? "on" : ""}"></i></div>
-      <h1>${esc(p.nick)}님, ${p.staff ? "학원 정보 하나만" : "두 가지만"} 남겨 주세요</h1>
-      <p class="muted small">학딩은 학부모가 함께 채우는 정보로 운영돼요. <b>학원 정보 1개 + 학원 평가 1개</b>를 남기면 모든 후기, 모임방 참여코드, 라이딩, 스케줄러가 열려요.</p>
+      <h1>${esc(p.nick)}님, ${p.staff ? "학원 정보 하나만" : "보내본 학원 후기 하나만"} 남겨 주세요</h1>
+      <p class="muted small">${p.staff ? "학원 관계자는 후기 대신 <b>학원 정보 1개</b>(등록·보태기)를 남기면 기능이 열려요." : "학원 기본정보는 학딩이 채워 두었어요. <b>보내본 학원 후기 1개</b>를 남기면 모든 후기, 맞춤 학원, 라이딩, 스케줄러가 열려요. 찾는 학원이 없으면 추가하고 바로 후기를 쓰면 돼요."}</p>
     </section>
-    <div class="grid2">
-      <div class="stat" style="border:2px solid ${s1 ? "var(--brand)" : "transparent"}"><b>${s1 ? "완료" : "1"}</b><span>학원 정보 등록</span></div>
-      <div class="stat" style="border:2px solid ${s2 ? "var(--brand)" : "transparent"}"><b>${p.staff ? "-" : s2 ? "완료" : "2"}</b><span>${p.staff ? "관계자는 평가 없음" : "학원 평가 작성"}</span></div>
-    </div>
     ${step}`;
 }
 
@@ -813,9 +928,9 @@ function reviewFormHtml(aid, edit, isGate) {
   const e = edit || {};
   return `
     <form class="card" data-form="review" data-edit="${esc(e.id || "")}" data-gate="${isGate ? 1 : 0}">
-      ${isGate ? `<span class="badge brand" style="align-self:flex-start">2단계 · 학원 평가 1개</span>` : ""}
+      ${isGate ? `<span class="badge brand" style="align-self:flex-start">가입 마지막 단계 · 후기 1개</span>` : ""}
       <h2>${edit ? "후기 수정" : "학원 평가하기"}</h2>
-      <label class="f">학원 *<select class="input" name="academyId" required ${edit ? "disabled" : ""}><option value="">보내본 학원을 골라 주세요</option>${acs.map((a) => `<option value="${esc(a.id)}" ${(e.academyId || aid) === a.id ? "selected" : ""}>${esc(a.name)} (${esc(a.dong || "")})</option>`).join("")}</select></label>
+      ${edit ? `<p class="small"><b>${esc(acadName(e.academyId))}</b></p>` : acadPicker(e.academyId || aid)}
       ${ITEMS.map(([k, l]) => `<fieldset><legend>${l} *</legend><div class="star-input">${[1, 2, 3, 4, 5].map((n) => `<input type="radio" id="s_${k}_${n}" name="${k}" value="${n}" required ${e.scores?.[k] === n ? "checked" : ""}><label for="s_${k}_${n}">${n}</label>`).join("")}</div></fieldset>`).join("")}
       <p class="xs muted">1 아쉬움 · 3 보통 · 5 매우 만족</p>
       <label class="f">한 줄 요약 *<input class="input" name="summary" required maxlength="60" value="${esc(e.summary || "")}" placeholder="예: 숙제 관리가 꼼꼼해서 습관이 잡혔어요"></label>
@@ -832,9 +947,88 @@ function reviewFormHtml(aid, edit, isGate) {
       ${isGate ? "" : `<button class="link small" type="button" data-act="back">취소</button>`}
     </form>`;
 }
+// 학원 이름으로 고르기 (영문·한글 읽기 매칭) + 없으면 추가 후 바로 후기
+function acadPicker(sel) {
+  const a = S.data.academies.find((x) => x.id === sel);
+  return `<div class="col" style="gap:6px"><span class="f" style="font-weight:700">학원 *</span>
+    <input type="hidden" name="academyId" value="${esc(a ? a.id : "")}">
+    <input class="input" data-input="pick" placeholder="학원 이름 검색 (예: stn, 에스티엔)" value="${esc(a ? a.name : "")}" autocomplete="off" aria-label="학원 이름 검색">
+    <div class="pick-list" id="pickList">${a ? `<div class="pick-item on"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")}</span></div>` : ""}</div>
+    <button class="link small" type="button" style="align-self:flex-start" data-act="addThenReview">찾는 학원이 없어요 → 학원 추가하고 후기 쓰기</button></div>`;
+}
+function pickListHtml(q) {
+  const list = S.data.academies.filter((a) => !a.hidden && matchQ(a, q)).slice(0, 8);
+  return list.map((a) => `<button type="button" class="pick-item" data-act="pickAcad" data-id="${esc(a.id)}"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")} · ${esc(a.category || "")}</span></button>`).join("") || `<p class="small muted">찾는 학원이 없어요. 아래에서 추가해 주세요.</p>`;
+}
 function vReviewForm() {
   const edit = S.ui.editReview ? S.data.myReviews.find((r) => r.id === S.ui.editReview) : null;
   return reviewFormHtml(S.param || "", edit, false);
+}
+
+/* ---------- 맞춤 학원 (PASS 인증처럼 한 단계씩) ---------- */
+const MT_STEPS = [
+  ["grade", "아이 학년을 골라 주세요", TGRADES.map((g) => [g, g])],
+  ["subj", "어떤 과목을 찾으세요?", MT_SUBJ.map((g) => [g, g])],
+  ["mode", "이동은 어떻게 할까요?", [["near", "우리 동네 중심", "가까운 곳 우선"], ["shuttle", "셔틀 필수", "차량 운행 학원만"], ["ride", "라이딩 가능", "품앗이 라이딩 있는 곳 가산"]]],
+  ["goal", "아이 목표는요?", [["base", "기초 다지기", "강사·분위기 중시"], ["care", "내신·밀착 관리", "관리 점수 중시"], ["adv", "심화·선행", "성적 향상·강사 중시"]]]
+];
+const mtState = () => (S.ui.mt = S.ui.mt || { s: 0, grade: "", subj: "", mode: "", goal: "", dong: (S.profile && S.profile.dong) || "" });
+function vMatch() {
+  const m = mtState();
+  if (m.s >= MT_STEPS.length) return `<div class="mt-wrap col" style="gap:14px">${mtResultHtml()}</div>`;
+  const [k, title, opts] = MT_STEPS[m.s];
+  return `<div class="mt-wrap col" style="gap:14px">
+    <section class="col" style="gap:8px;padding:0 2px"><span class="badge brand" style="align-self:flex-start">맞춤 학원 찾기 · ${m.s + 1} / ${MT_STEPS.length}</span>
+      <div class="mt-prog">${MT_STEPS.map((_, i) => `<i class="${i <= m.s ? "on" : ""}"></i>`).join("")}</div></section>
+    <section class="card mt-step" key="${m.s}">
+      <h1>${title}</h1>
+      ${k === "mode" ? `<label class="f">우리 동네 <span class="hint">가까운 학원을 고르는 기준이에요 (저장하지 않아요)</span><input class="input" id="mtDong" list="schoolList" maxlength="20" value="${esc(m.dong)}" placeholder="예: 옥동"></label>${schoolDatalist()}` : ""}
+      <div class="mt-opts ${opts[0][2] ? "wide" : ""}">${opts.map(([v, l, sub]) => `<button class="mt-opt ${m[k] === v ? "pick" : ""}" data-act="mtPick" data-k="${k}" data-v="${esc(v)}">${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</button>`).join("")}</div>
+      ${m.s ? `<button class="link small" style="align-self:flex-start" data-act="mtBack">← 이전</button>` : ""}
+    </section></div>`;
+}
+// 추천 점수: 학년 30 + 거리(동네·차량) 15~30 + 별점 25 + 목표별 항목 15 + 후기 수·라이딩 가산
+function mtRank() {
+  const m = mtState(), rm = ratingMap(), dong = normSchool(m.dong);
+  const GOALW = { base: { teacher: 0.5, mood: 0.5 }, care: { care: 1 }, adv: { grade: 0.6, teacher: 0.4 } }[m.goal] || {};
+  const rideSet = new Set((S.data.rides || []).map((r) => r.academyId));
+  const hasShuttle = (a) => a.shuttle === "운영" || a.shuttle === "일부 지역만" || !!a.shuttleArea;
+  const out = [];
+  S.data.academies.forEach((a) => {
+    if (a.hidden || a.closed) return;
+    if (m.subj === "예체능" ? !isArts(a.category) : a.category !== m.subj) return;
+    const tg = a.targetGrades || [];
+    if (tg.length && !tg.includes(m.grade)) return;              // 그 학년을 안 가르치면 제외
+    if (m.mode === "shuttle" && !hasShuttle(a)) return;
+    const near = dong ? (normSchool(a.dong) === dong ? 1 : normSchool(a.shuttleArea).includes(dong) ? 0.8 : 0) : 0;
+    const r = rm[a.id], conf = r ? r.c / (r.c + 3) : 0;
+    const goalS = r ? Object.entries(GOALW).reduce((t, [k, w]) => t + (w * (r.per[k] || 0)) / 5, 0) * conf : 0;
+    const nearW = m.mode === "near" ? 30 : m.mode === "shuttle" ? 20 : 15;
+    const score = 30 * (tg.length ? 1 : 0.35) + nearW * near + 25 * (r ? (r.o / 5) * conf : 0) + 15 * goalS + (r ? Math.log2(r.c + 1) * 2 : 0) + (m.mode === "ride" && rideSet.has(a.id) ? 20 : 0);
+    const why = [tg.length ? `${m.grade} 대상` : "", near === 1 ? "같은 동네" : near ? "우리 동네로 차량" : "", hasShuttle(a) ? "셔틀 운행" : "", rideSet.has(a.id) ? "라이딩 품앗이 있음" : "", r ? `후기 ${r.c}개` : ""].filter(Boolean);
+    out.push({ a, score, r, why });
+  });
+  return out.sort((x, y) => y.score - x.score).slice(0, 3);
+}
+function mtResultHtml() {
+  const m = mtState(), top = mtRank(), goalL = { base: "기초 다지기", care: "내신·밀착 관리", adv: "심화·선행" }[m.goal];
+  const head = `<section class="col" style="gap:4px;padding:0 2px"><div class="zzan">🎉 짠!</div><p class="small muted" style="text-align:center">${esc(m.grade)} · ${esc(m.subj)} · ${esc(goalL)}${m.dong ? " · " + esc(m.dong) : ""}</p></section>`;
+  if (!top.length) return head + `<section class="card"><div class="empty">조건에 맞는 학원을 아직 찾지 못했어요.<br>조건을 바꾸거나, 아는 학원의 대상 학년·셔틀 정보를 채워 주세요.</div><button class="btn block" data-act="mtReset">다시 찾기</button></section>`;
+  const [w, ...rest] = top;
+  const stars = (x) => x.r ? `<span class="row small">${starText(x.r.o)} <span class="score">${r1(x.r.o)}</span><span class="muted">후기 ${x.r.c}</span></span>` : `<span class="small muted">아직 후기가 없어요</span>`;
+  return head + `
+    <section class="card mt-win">
+      <span class="badge accent" style="align-self:flex-start">👑 1순위 추천</span>
+      <h1>${esc(w.a.name)}</h1>
+      <p class="small muted">${esc(w.a.category)} · ${esc(w.a.dong || "")}</p>
+      ${stars(w)}
+      ${tgChips(w.a) ? `<div>${tgChips(w.a)}</div>` : ""}
+      <div class="row wrap" style="gap:5px">${w.why.map((t) => `<span class="badge brand">${esc(t)}</span>`).join("")}</div>
+      <div class="grid2"><button class="btn" data-act="nav" data-v="academy" data-p="${esc(w.a.id)}">자세히 보기</button>${isStaff() ? "" : `<button class="btn ghost" data-act="writeReview" data-id="${esc(w.a.id)}">평가하기</button>`}</div>
+    </section>
+    ${rest.length ? `<section class="card"><h2>2~3순위</h2>${rest.map((x, i) => `<button class="t3-item" data-act="nav" data-v="academy" data-p="${esc(x.a.id)}"><span class="rk">${i + 2}</span><span class="grow col" style="gap:0"><b class="ellipsis">${esc(x.a.name)}</b>${stars(x)}<span class="xs muted">${esc(x.why.join(" · "))}</span></span></button>`).join("")}</section>` : ""}
+    <p class="xs muted" style="padding:0 2px">학년 일치 · 거리(동네·차량) · 학부모 별점과 목표에 맞는 항목 점수 · 후기 수를 합산했어요. 후기와 학원 정보가 쌓일수록 정확해져요.</p>
+    <button class="btn ghost block" data-act="mtReset">다시 찾기</button>`;
 }
 
 /* ---------- 라이딩 ---------- */
@@ -952,6 +1146,7 @@ function vMe() {
       <div class="row between"><h1>${esc(p.nick)}</h1>${S.admin ? '<span class="badge accent">운영자</span>' : ""}</div>
       <dl class="info"><dt>동네</dt><dd>${esc(p.dong)}</dd><dt>아파트</dt><dd>${esc(p.apt || "-")}</dd><dt>아이 학년대</dt><dd>${esc((p.grades || []).join(", "))}</dd>${p.staff ? `<dt>구분</dt><dd>학원 관계자${STAFF_BADGE}</dd>` : ""}<dt>가입일</dt><dd>${fmtDate(p.createdAt)}</dd><dt>로그인</dt><dd class="small">${esc(S.user?.email || "")} <span class="muted">(다른 회원에게 안 보임)</span></dd></dl>
       <button class="btn ghost block" data-act="editProfile">프로필 수정</button>
+      <button class="btn ghost block" data-act="nav" data-v="rooms">동네·아파트 모임방</button>
     </section>
     <section class="card"><h2>내가 쓴 후기 ${S.data.myReviews.length}</h2>
       ${S.data.myReviews.map((r) => `<div class="list-item"><div class="grow col" style="gap:2px"><b class="small">${esc(acadName(r.academyId))}</b><span class="small muted ellipsis">${esc(r.summary)}</span></div><span class="row small" style="gap:3px">${icon.heartFill}${keys(r.likes).length}</span><button class="link small" data-act="writeReview" data-id="${esc(r.academyId)}" data-edit="${esc(r.id)}">수정</button></div>`).join("") || `<div class="empty">아직 없어요</div>`}
@@ -1209,8 +1404,31 @@ const A = {
   policyModal: () => modal(policyHtml()),
   agreeAll: (d, el) => document.querySelectorAll(".agree").forEach((c) => (c.checked = el.checked)),
   cat: (d) => { S.ui.cat = d.c; render(); },
+  pickAcad: (d, el) => {
+    const f = el.closest("form, .modal"); const a = S.data.academies.find((x) => x.id === d.id); if (!f || !a) return;
+    if (f.dataset.form === "review") { f.querySelector('[name="academyId"]').value = a.id; f.querySelector('[data-input="pick"]').value = a.name; f.querySelector("#pickList").innerHTML = `<div class="pick-item on"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")}</span></div>`; return; }
+    closeModal(); A.writeReview({ id: a.id });   // 학원 탭 [후기 쓰기]에서 고른 경우
+  },
+  addThenReview: () => { S.ui.addThenReview = true; A.addAcad(); },
+  reviewStart: () => {
+    if (!S.user) { A.login(); return; }
+    if (isStaff()) { toast("학원 관계자는 후기를 남길 수 없어요"); return; }
+    modal(`<div class="col"><h2>어느 학원 후기를 쓸까요?</h2><p class="small muted">학원 이름으로 찾아 주세요. 영어 이름은 한글 읽기로도 찾아져요 (stn ↔ 에스티엔).</p>
+      <input class="input" data-input="pick" placeholder="학원 이름 검색" autocomplete="off" aria-label="학원 이름 검색"><div class="pick-list" id="pickList"></div>
+      <button class="link small" type="button" style="align-self:flex-start" data-act="addThenReview">찾는 학원이 없어요 → 학원 추가하고 후기 쓰기</button></div>`);
+    setTimeout(() => { const i = document.querySelector('#layer [data-input="pick"]'); if (i) i.focus(); }, 50);
+  },
   schoolClear: () => { S.ui.school = ""; render(); },
+  mtPick: (d, el) => {
+    const m = mtState(); m[d.k] = d.v;
+    if (d.k === "mode") { const i = $("#mtDong"); m.dong = i ? clip(i.value.trim(), 20) : m.dong; }
+    el.closest(".mt-opts").querySelectorAll(".mt-opt").forEach((b) => b.classList.remove("pick")); el.classList.add("pick");
+    setTimeout(() => { m.s += 1; render(); window.scrollTo(0, 0); }, 280);
+  },
+  mtBack: () => { const m = mtState(); m.s = Math.max(0, m.s - 1); render(); },
+  mtReset: () => { S.ui.mt = null; render(); },
   rank: (d) => { S.ui.rankMode = d.m; render(); },
+  t3: (d) => { S.ui.t3 = Number(d.i); const b = $("#t3"); if (b) b.innerHTML = top3Html(); startT3(); },
   acadTab: (d) => { S.ui.acadTab = d.t; render(); },
   adminTab: (d) => { S.ui.adminTab = d.t; render(); },
   gateMode: (d) => { S.ui.gateMode = d.m; render(); },
@@ -1394,12 +1612,16 @@ document.addEventListener("click", (e) => {
   if (el.type !== "checkbox") e.preventDefault();
   f(el.dataset, el, e);
 });
+// 카드(div role=link)도 키보드 Enter로 열리게
+document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches('[role="link"][data-act]')) e.target.click(); });
 document.addEventListener("input", (e) => {
   const k = e.target.dataset.input; if (!k) return;
   if (k === "search") { S.ui.q = e.target.value.trim(); const box = $("#acadList"); if (box) box.innerHTML = acadListHtml(); }
+  if (k === "pick") { const f = e.target.closest("form, .modal") || document; const h = f.querySelector('[name="academyId"]'); if (h) h.value = ""; const box = f.querySelector("#pickList"); if (box) box.innerHTML = e.target.value.trim() ? pickListHtml(e.target.value) : ""; }
 });
 document.addEventListener("change", (e) => {
-  const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad"].includes(k)) return;
+  const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad", "grade"].includes(k)) return;
+  if (k === "grade") S.ui.grade = e.target.value;
   if (k === "dong") S.ui.dong = e.target.value;
   if (k === "sort") S.ui.sort = e.target.value;
   if (k === "rideAcad") S.ui.rideAcad = e.target.value;
@@ -1417,6 +1639,10 @@ document.addEventListener("submit", async (e) => {
   finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
 });
 // '신정초등학교,옥동 ,  삼산동' → '신정초, 옥동, 삼산동' (중복 제거, 최대 12곳)
+// 선택한 학년을 TGRADES 순서로 정리
+const pickGrades = (fd) => TGRADES.filter((g) => fd.getAll("targetGrades").includes(g));
+// 조회 화면: 선택된 학년만 칩으로 (없으면 예전 글자)
+const tgChips = (a, max = 13) => { const g = a.targetGrades || []; if (!g.length) return a.target ? esc(a.target) : ""; return `<span class="tgs" style="gap:4px">${g.slice(0, max).map((x) => `<span class="gchip">${x}</span>`).join("")}${g.length > max ? `<span class="gchip">+${g.length - max}</span>` : ""}</span>`; };
 const cleanArea = (s) => clip([...new Set(String(s || "").split(/[,，·\/\n]+/).map((x) => normSchool(x)).filter(Boolean))].slice(0, 12).join(", "), 150);
 const F = {
   async homeSearch(form, fd) { S.ui.q = clip(fd.get("q"), 40); go("academies"); },
@@ -1431,11 +1657,13 @@ const F = {
   async newAcad(form, fd, v) {
     const name = clip(v("name"), 40);
     if (S.data.academies.some((a) => a.name.replace(/\s/g, "") === name.replace(/\s/g, "") && a.dong === v("dong"))) { toast("이미 등록된 학원이에요. '기존 학원에 정보 보태기'를 이용해 주세요"); return; }
-    const a = { name, category: v("category"), dong: clip(v("dong"), 20), address: clip(v("address"), 80), target: clip(v("target"), 30), shuttle: v("shuttle"), shuttleArea: cleanArea(v("shuttleArea")), hours: clip(v("hours"), 60), fee: clip(v("fee"), 60), createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: S.profile.nick, hidden: false };
+    const a = { name, category: v("category"), dong: clip(v("dong"), 20), address: clip(v("address"), 80), target: "", targetGrades: pickGrades(fd), shuttle: v("shuttle"), shuttleArea: cleanArea(v("shuttleArea")), hours: clip(v("hours"), 60), fee: clip(v("fee"), 60), createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: S.profile.nick, hidden: false };
     const id = await BE.db.add("academies", a);
     const lid = await BE.db.add("wikiLogs", { academyId: id, uid: S.user.uid, nick: S.profile.nick, ...(isStaff() ? { staff: true } : {}), type: "create", text: "학원 등록", at: now(), hidden: false });
-    await markLog(lid); toast("학원을 등록했어요"); S.ui.reviewFor = id; await refresh();
-    if (S.view === "gate") render(); else { closeModal(); go("academy", id); }
+    await markLog(lid); toast("학원을 등록했어요. 이어서 후기를 남겨 주세요"); S.ui.reviewFor = id; await refresh();
+    if (S.view === "gate") { closeModal(); render(); }
+    else if (S.ui.addThenReview) { S.ui.addThenReview = false; closeModal(); A.writeReview({ id }); }
+    else { closeModal(); go("academy", id); }
   },
   async gateStory(form, fd, v) {
     const aid = v("academyId"); if (!aid) return;
@@ -1444,8 +1672,10 @@ const F = {
   },
   async editAcad(form, fd, v) {
     const a = S.data.full[form.dataset.id] || S.data.academies.find((x) => x.id === form.dataset.id);
-    const fields = { category: "과목", dong: "동네", address: "주소", phone: "전화", target: "대상", shuttle: "셔틀", shuttleArea: "차량 오는 곳", hours: "수업 시간", fee: "수강료" };
+    const fields = { category: "과목", dong: "동네", address: "주소", phone: "전화", shuttle: "셔틀", shuttleArea: "차량 오는 곳", hours: "수업 시간", fee: "수강료" };
     const patch = {}; const changes = [];
+    const tg = pickGrades(fd), oldTg = a.targetGrades || [];
+    if (tg.join(",") !== oldTg.join(",")) { patch.targetGrades = tg; changes.push(`대상 학년: ${oldTg.join(", ") || "(없음)"} → ${tg.join(", ") || "(없음)"}`); }
     Object.entries(fields).forEach(([k, l]) => { const nv = k === "shuttleArea" ? cleanArea(v(k)) : clip(v(k), 80); if ((a[k] || "") !== nv) { patch[k] = nv; changes.push(`${l}: ${a[k] || "(없음)"} → ${nv || "(없음)"}`); } });
     if (!changes.length) { closeModal(); return; }
     patch.updatedAt = now(); patch.updatedNick = S.profile.nick;
@@ -1768,7 +1998,7 @@ async function decryptText(obj, pw) {
     S.user = u; S.admin = isAdminUser(u); S.profile = null;
     S.data.myReviews = []; S.data.reviews = []; S.data.rides = []; S.data.rooms = []; S.data.schedule = null;
     if (u) { try { S.profile = await BE.db.get("users", u.uid); } catch (e) { console.warn(e); } }
-    await loadPublic(); await loadMember();
+    await loadPublic(); await loadMember(); if (S.admin) syncRatings();
     S.ready = true;
     if (first) { first = false; route(); } else { if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
   });
