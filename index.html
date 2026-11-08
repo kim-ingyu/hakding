@@ -1520,7 +1520,7 @@ const F = {
       const name = clip(r[ni], 40), address = pick(r, "address");
       if (exist.has(name + "|" + address)) return; exist.add(name + "|" + address);
       const dong = pick(r, "dong") || extractDong(address);
-      items.push({ name, address, dong: clip(dong, 20), category: mapCat(pick(r, "category") + " " + name), target: pick(r, "target"), fee: pick(r, "fee") ? clip(pick(r, "fee"), 60) + " · 공공데이터" : "", shuttle: "모름", hours: "" });
+      items.push({ name, address, dong: clip(dong, 20), category: mapCat(name, pick(r, "category")), target: pick(r, "target"), fee: pick(r, "fee") ? clip(pick(r, "fee"), 60) + " · 공공데이터" : "", shuttle: "모름", hours: "" });
     });
     if (!items.length) { toast("가져올 새 학원이 없어요"); return; }
     if (!(await ask(`${items.length.toLocaleString()}곳을 가져올까요?${items.length > 2000 ? "\n무료 요금제 하루 한도를 넘을 수 있어요. 지역 필터를 좁혀 주세요." : ""}`, "가져오기"))) return;
@@ -1590,7 +1590,7 @@ function neisGroup(rows) {
     if (r.LE_CRSE_LIST_NM && !r.LE_CRSE_NM) g.courses.add(r.LE_CRSE_LIST_NM);
     if (r.PSNBY_THCC_CNTNT && r.THCC_OTHBC_YN !== "N") g.fees.add(String(r.PSNBY_THCC_CNTNT).trim());
   });
-  return [...m.values()].map((g) => { const realm = [...g.realm].join(", "), courses = [...g.courses].join(", "); return { ...g, realm, courses, fee: [...g.fees].join(" / "), category: mapCat(courses + " " + realm + " " + g.name) }; });
+  return [...m.values()].map((g) => { const realm = [...g.realm].join(", "), courses = [...g.courses].join(", "); return { ...g, realm, courses, fee: [...g.fees].join(" / "), category: mapCat(g.name, courses + " " + realm) }; });
 }
 async function neisAnalyze(rows, region, filter, includeKyo) {
   const groups = neisGroup(rows);
@@ -1612,9 +1612,18 @@ async function neisAnalyze(rows, region, filter, includeKyo) {
   });
   S.ui.neis = out; render();
 }
-function mapCat(s) {
-  const m = [["수학", /수학|산수|연산/], ["영어", /영어|외국어|어학/], ["국어", /국어|독서|한글/], ["논술", /논술|글쓰기/], ["과학", /과학|물리|화학|생물/], ["코딩", /코딩|컴퓨터|정보|소프트웨어/], ["예체능", /음악|미술|피아노|태권|체육|무용|발레|수영|예능|운동/], ["종합", /종합|보습|입시|전과목/]];
-  const f = m.find(([, re]) => re.test(s)); return f ? f[0] : "기타";
+const CAT_RULES = [["수학", /수학|산수|연산|매쓰|math|셈/i], ["영어", /영어|잉글리[시쉬]|english|\bEng/i], ["국어", /(?<![중외한])국어|독해|문해|한글|한자/], ["논술", /논술|글쓰기|독서토론/], ["과학", /과학|사이언스|science|물리|화학|생물/i], ["코딩", /코딩|컴퓨터|소프트웨어|로봇|정보처리/], ["예체능", /음악|미술|피아노|바이올린|태권|체육|무용|발레|수영|예능|운동|댄스|줄넘기|아트|드럼|성악|바둑/]];
+// 학원 이름의 과목을 먼저 보고, 없으면 신고된 과정명으로. 과정이 여러 과목이면 '종합'
+function mapCat(name, rest = "") {
+  name = String(name || ""); rest = String(rest || "");
+  if (/독서실|스터디카페|스터디룸|스터디센터/.test(name)) return "기타";
+  const byName = CAT_RULES.filter(([, re]) => re.test(name)).map(([c]) => c);
+  if (byName.length === 1) return byName[0];
+  if (byName.length > 1 || /종합|보습|입시|전과목|단과/.test(name)) return "종합";
+  const byRest = CAT_RULES.filter(([, re]) => re.test(rest)).map(([c]) => c);
+  if (byRest.length === 1) return byRest[0];
+  if (byRest.length > 1 || /종합|보습|입시/.test(rest)) return "종합";
+  return "기타";
 }
 
 /* ---------- CSV · 다운로드 · 암호화 ---------- */
