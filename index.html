@@ -1,0 +1,1638 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>학딩 · 우리 동네 학원 정보와 라이딩</title>
+<meta name="description" content="학부모가 직접 쓰는 우리 동네 학원 후기, 학원 라이딩 품앗이, 아이 학원 스케줄러. since 2026">
+<meta name="theme-color" content="#0F5E5E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F5E5E'/%3E%3Cpath d='M14 44c8 0 10-10 18-10s10 10 18 10' stroke='%23FFD27A' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='22' r='7' fill='%23fff'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<style>
+:root{
+  --brand:#0F5E5E;--brand-d:#0A4444;--brand-l:#DDEFEF;--accent:#F2B544;--accent-l:#FDF1D8;
+  --bg:#F3F5F7;--card:#FFFFFF;--ink:#1B1F24;--ink2:#4A525C;--ink3:#5B6470;--line:#E1E5EA;--line2:#C9D0D8;
+  --warn:#7E3D0C;--warn-l:#FBEBDA;--danger:#A3290F;--danger-l:#FBE3DD;--ok:#1F6B3A;
+  --radius:16px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans KR',system-ui,-apple-system,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;font-size:15px;line-height:1.55;-webkit-text-size-adjust:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+a{color:var(--brand)}
+.app{max-width:560px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column;background:var(--bg)}
+header.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.logo{display:flex;align-items:center;gap:9px;background:none;border:0;padding:0;cursor:pointer;text-align:left}
+.logo .wm{display:flex;flex-direction:column;line-height:1.1}
+.logo .wm b{font-size:21px;letter-spacing:-.5px;color:var(--brand-d)}
+.logo .wm small{font-size:10.5px;color:var(--ink3);letter-spacing:.6px;font-weight:600}
+.demo-bar{background:var(--accent-l);color:#6B4A0C;font-size:12.5px;padding:7px 16px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.demo-bar button{border:0;background:transparent;text-decoration:underline;color:inherit;cursor:pointer;font-size:12.5px;padding:4px}
+main{flex:1;padding:16px 16px 96px;display:flex;flex-direction:column;gap:14px}
+nav.tabs{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:560px;background:#fff;border-top:1px solid var(--line);display:flex;padding:0 4px env(safe-area-inset-bottom);z-index:20}
+nav.tabs button{flex:1;min-height:60px;border:0;background:none;color:var(--ink3);font-size:11.5px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer}
+nav.tabs button.on{color:var(--brand);font-weight:700}
+nav.tabs svg{width:22px;height:22px}
+.card{background:var(--card);border-radius:var(--radius);padding:16px;display:flex;flex-direction:column;gap:10px}
+.card.flat{border:1px solid var(--line)}
+h1{font-size:22px;margin:0;letter-spacing:-.4px;line-height:1.35}
+h2{font-size:17px;margin:0;letter-spacing:-.3px}
+h3{font-size:15px;margin:0}
+p{margin:0}
+.muted{color:var(--ink3)}
+.small{font-size:13px}
+.xs{font-size:12px}
+.row{display:flex;gap:8px;align-items:center}
+.row.wrap{flex-wrap:wrap}
+.row.between{justify-content:space-between}
+.col{display:flex;flex-direction:column;gap:8px}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.btn{min-height:46px;padding:0 18px;border-radius:12px;border:0;background:var(--brand);color:#fff;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;font-size:15px}
+.btn:hover{background:var(--brand-d)}
+.btn.block{width:100%}
+.btn.lg{min-height:54px;font-size:16.5px;border-radius:14px}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line2);font-weight:600}
+.btn.ghost:hover{background:#F7F8FA}
+.btn.dark{background:var(--ink)}
+.btn.warn{background:var(--warn-l);color:var(--warn)}
+.btn.danger{background:var(--danger-l);color:var(--danger)}
+.btn.sm{min-height:38px;padding:0 12px;font-size:13.5px;border-radius:10px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.link{background:none;border:0;color:var(--brand);font-weight:600;cursor:pointer;padding:6px 2px;font-size:14px}
+.chip{min-height:40px;padding:0 14px;border-radius:20px;border:1px solid var(--line2);background:#fff;cursor:pointer;font-size:14px;white-space:nowrap}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff;font-weight:600}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.badge{display:inline-flex;align-items:center;height:23px;padding:0 9px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap;background:#E8EBF0;color:#333A44}
+.badge.brand{background:var(--brand-l);color:#0B4848}
+.badge.accent{background:var(--accent-l);color:#6B4A0C}
+.badge.warn{background:var(--warn-l);color:var(--warn)}
+.badge.danger{background:var(--danger-l);color:var(--danger)}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600;color:var(--ink2)}
+label.f .hint{font-weight:400;color:var(--ink3);font-size:12px}
+.input,select.input,textarea.input{width:100%;min-height:48px;border:1px solid var(--line2);border-radius:12px;padding:10px 14px;font-size:16px;background:#fff;font-weight:400;color:var(--ink)}
+textarea.input{min-height:96px;resize:vertical}
+.input:focus{outline:2px solid var(--brand);outline-offset:1px;border-color:var(--brand)}
+fieldset{border:0;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;min-width:0}
+legend{font-size:13px;font-weight:600;color:var(--ink2);padding:0;margin-bottom:6px}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:14px;cursor:pointer;padding:6px 0}
+.check input{width:20px;height:20px;margin-top:2px;accent-color:var(--brand);flex:none}
+.stars{color:var(--accent);letter-spacing:1px;font-size:14px;white-space:nowrap}
+.stars .off{color:#D6DBE1}
+.score{font-weight:700;font-size:14px}
+.rate-row{display:grid;grid-template-columns:86px minmax(0,1fr) 34px;gap:10px;align-items:center;font-size:13px}
+.bar{height:8px;background:#EDF0F3;border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brand);border-radius:4px}
+.star-input{display:flex;gap:4px}
+.star-input input{position:absolute;opacity:0;width:1px;height:1px}
+.star-input label{width:44px;height:44px;border-radius:10px;border:1px solid var(--line2);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;font-weight:700;color:var(--ink3);background:#fff}
+.star-input input:checked + label{background:var(--accent);border-color:var(--accent);color:#3D2A05}
+.star-input input:focus-visible + label{outline:2px solid var(--brand)}
+.list-item{display:flex;gap:12px;align-items:center;padding:12px 0;border-bottom:1px solid #EDF0F3}
+.list-item:last-child{border-bottom:0}
+.acad{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:16px;padding:14px;display:flex;gap:12px;align-items:center;cursor:pointer}
+.acad:hover{border-color:var(--line2)}
+.acad .ic{width:48px;height:48px;border-radius:12px;background:var(--brand-l);color:#0B4848;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex:none}
+.grow{flex:1;min-width:0}
+.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stat{background:#fff;border-radius:14px;padding:12px;display:flex;flex-direction:column;gap:2px;align-items:flex-start}
+.stat b{font-size:20px;letter-spacing:-.5px}
+.stat span{font-size:12px;color:var(--ink3)}
+.hero{background:var(--brand);color:#fff;border-radius:20px;padding:22px 20px;display:flex;flex-direction:column;gap:12px}
+.hero h1{color:#fff;font-size:24px}
+.hero p{opacity:.92}
+.hero .btn{background:#fff;color:var(--brand-d)}
+.notice{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;background:#E9EEF2;border-radius:12px;font-size:13px;color:#3F4750;line-height:1.55}
+.notice.warn{background:var(--warn-l);color:#6B3309}
+.notice.danger{background:var(--danger-l);color:#7A1E09}
+.notice svg{flex:none;margin-top:2px}
+.review{border-top:1px solid #EDF0F3;padding-top:12px;display:flex;flex-direction:column;gap:7px}
+.review:first-child{border-top:0;padding-top:0}
+.tabbar{display:flex;gap:4px;background:#E8EBEF;padding:4px;border-radius:12px}
+.tabbar button{flex:1;min-height:40px;border:0;border-radius:9px;background:transparent;cursor:pointer;font-size:14px;color:var(--ink2)}
+.tabbar button.on{background:#fff;color:var(--ink);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.06)}
+.rank{display:flex;align-items:center;gap:12px;padding:9px 0}
+.rank .n{width:28px;height:28px;border-radius:14px;background:#E8EBF0;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex:none}
+.rank:first-child .n{background:var(--accent);color:#3D2A05}
+.steps{display:flex;gap:6px}
+.steps i{flex:1;height:6px;border-radius:3px;background:#DCE1E6}
+.steps i.on{background:var(--brand)}
+.ride{border:1px solid var(--line);border-radius:16px;background:#fff;padding:14px;display:flex;flex-direction:column;gap:8px}
+.ride.trouble{border-color:#E8A08C}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:20px;font-weight:700;letter-spacing:3px;background:#F3F5F7;border-radius:10px;padding:8px 14px;display:inline-block}
+.sched-day{display:grid;grid-template-columns:36px minmax(0,1fr);gap:10px;padding:10px 0;border-bottom:1px solid #EDF0F3;align-items:start}
+.sched-day:last-child{border-bottom:0}
+.sched-day .d{font-weight:700;color:var(--ink2);padding-top:6px}
+.sched-day.today .d{color:var(--brand)}
+.slot{display:flex;gap:10px;align-items:center;background:#F6F8FA;border-radius:10px;padding:8px 10px;margin-bottom:6px}
+.slot:last-child{margin-bottom:0}
+.slot .t{font-weight:700;font-size:13px;white-space:nowrap}
+.dot{width:10px;height:10px;border-radius:5px;flex:none}
+.empty{padding:20px 8px;text-align:center;color:var(--ink3);font-size:14px}
+.locked{position:relative;padding:18px;border:1px dashed var(--line2);border-radius:14px;text-align:center;color:var(--ink2);font-size:14px;display:flex;flex-direction:column;gap:10px;align-items:center}
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th,.table td{text-align:left;padding:8px 6px;border-bottom:1px solid #EDF0F3;vertical-align:top}
+.table th{color:var(--ink3);font-weight:600}
+.scroll-x{overflow-x:auto}
+.info{display:grid;grid-template-columns:84px minmax(0,1fr);row-gap:8px;column-gap:10px;font-size:14px}
+.info dt{color:var(--ink3)}
+.info dd{margin:0;word-break:keep-all}
+.modal-wrap{position:fixed;inset:0;background:rgba(15,20,25,.45);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fff;width:100%;max-width:560px;max-height:88vh;overflow-y:auto;border-radius:20px 20px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px}
+@media (min-width:600px){.modal-wrap{align-items:center}.modal{border-radius:20px}}
+.toast{position:fixed;left:50%;bottom:84px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:10px 16px;border-radius:12px;font-size:14px;z-index:60;max-width:90%;text-align:center}
+.policy h3{margin-top:10px}
+.policy p,.policy li{font-size:14px;color:var(--ink2)}
+.policy ul{margin:4px 0;padding-left:20px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.loading{padding:60px 0;text-align:center;color:var(--ink3)}
+footer.foot{padding:4px 4px 0;font-size:12px;color:var(--ink3);display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+footer.foot button{background:none;border:0;color:var(--ink3);text-decoration:underline;cursor:pointer;font-size:12px;padding:4px}
+</style>
+</head>
+<body>
+<div class="app" id="app"><div class="loading">학딩을 불러오는 중…</div></div>
+<div id="layer"></div>
+
+<script type="module">
+/* =====================================================================
+   학딩 (Hakding) — since 2026
+   설정: 아래 CONFIG만 바꾸면 됩니다. (설정가이드.md 참고)
+   firebase.apiKey 가 "YOUR_" 로 시작하면 '데모 모드'로 동작합니다.
+   (데모 모드: Firebase 없이 이 브라우저에만 저장, 기능 체험용)
+   ===================================================================== */
+const CONFIG = {
+  firebase: {
+    apiKey: "AIzaSyDXf6DPJICcTh9gLJBqaFBbgpXUaLexVOY",
+    authDomain: "hakding-a5195.firebaseapp.com",
+    projectId: "hakding-a5195",
+    storageBucket: "hakding-a5195.firebasestorage.app",
+    messagingSenderId: "1085371099716",
+    appId: "1:1085371099716:web:ef4ba462864f26c26faa11",
+    measurementId: "G-TJ014PB5PF"
+  },
+  appCheckSiteKey: "",                         // reCAPTCHA v3 사이트 키 (선택, 권장)
+  adminEmails: ["igkim822@gmail.com"],         // firestore.rules 의 관리자 이메일과 같게
+  city: "우리 동네",                            // 예: "울산" — 화면 문구에 사용
+  giftText: "매월 좋아요를 가장 많이 받은 학부모님께 [감사 선물]을 드려요",
+  policyVersion: "2026-11-08",
+  contactEmail: "[운영자 연락 이메일]"
+};
+// 데모 모드: 설정 전이거나, PC에서 파일을 더블클릭해 열었거나(file://), 주소 끝에 ?demo=1 을 붙였을 때
+const DEMO = CONFIG.firebase.apiKey.startsWith("YOUR") || location.protocol === "file:" || new URLSearchParams(location.search).has("demo");
+let track = () => {};
+const DEMO_ADMIN_EMAIL = "admin@demo.local";
+
+/* ---------- 상수 ---------- */
+const CATS = ["수학","영어","국어","과학","종합","논술","코딩","예체능","기타"];
+const ITEMS = [["grade","성적 향상"],["teacher","강사 실력"],["care","관리"],["fee","학원비 만족"],["mood","분위기"]];
+const GRADES = ["초등 저학년","초등 고학년","중학생","고등학생"];
+const DAYS = ["월","화","수","목","금","토","일"];
+const PERIODS = ["3개월 미만","3~6개월","6개월~1년","1년 이상"];
+const SHUTTLE = ["운영","일부 지역만","없음","모름"];
+const COLORS = ["#0F5E5E","#C2410C","#1D4ED8","#7C3AED","#BE185D","#4D7C0F"];
+const OFFICES = [["B10","서울"],["C10","부산"],["D10","대구"],["E10","인천"],["F10","광주"],["G10","대전"],["H10","울산"],["I10","세종"],["J10","경기"],["K10","강원"],["M10","충북"],["N10","충남"],["P10","전북"],["Q10","전남"],["R10","경북"],["S10","경남"],["T10","제주"]];
+const NEIS_URL = "https://open.neis.go.kr/hub/acaInsTiInfo";
+const LS = { get(k) { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } }, set(k, v) { try { if (v) localStorage.setItem(k, v); else localStorage.removeItem(k); } catch (e) {} } };
+const extractDong = (addr) => ((String(addr || "").match(/\(([가-힣0-9]+(동|읍|면|가))[,)\s]/) || String(addr || "").match(/([가-힣0-9]+(동|읍|면))(?=\s|$|,)/) || [])[1] || "");
+const normName = (s) => String(s || "").replace(/\(.*?\)|\s|학원$|교습소$/g, "");
+
+/* ---------- 유틸 ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const now = () => Date.now();
+const ymd = (t = now()) => { const d = new Date(t); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0"); };
+const fmtDate = (t) => { if (!t) return ""; const d = new Date(t); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`; };
+const md = (s) => { const [y, m, d] = s.split("-"); return `${Number(m)}/${Number(d)}`; };
+const isoDay = (offset = 0) => { const d = new Date(); d.setDate(d.getDate() + offset); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; };
+const todayDay = () => DAYS[(new Date().getDay() + 6) % 7];
+const avg = (a) => a.length ? a.reduce((x, y) => x + y, 0) / a.length : 0;
+const r1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
+const safeLink = (u) => /^https:\/\/open\.kakao\.com\/[A-Za-z0-9_\-\/?=&.]+$/.test(String(u || "").trim()) ? String(u).trim() : "";
+const keys = (o) => Object.keys(o || {});
+const clip = (s, n) => String(s || "").trim().slice(0, n);
+const starText = (n) => { const f = Math.round(n); return `<span class="stars" aria-label="5점 만점에 ${r1(n)}점">${"★".repeat(f)}<span class="off">${"★".repeat(5 - f)}</span></span>`; };
+const icon = {
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-6 8 6v9H4z"/><path d="M10 20v-5h4v5"/></svg>',
+  acad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M3 9l9-5 9 5-9 5z"/><path d="M7 11v5c3 2 7 2 10 0v-5"/></svg>',
+  car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true"><path d="M4 16h16v-4l-2-5H6l-2 5z"/><circle cx="8" cy="17" r="1.6"/><circle cx="16" cy="17" r="1.6"/></svg>',
+  chat: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  cal: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>',
+  lock: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>',
+  info: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>',
+  heart: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
+  heartFill: '<svg width="16" height="16" viewBox="0 0 24 24" fill="#C2410C" stroke="#C2410C" stroke-width="2" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>',
+  back: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>'
+};
+const LOGO = `<svg width="38" height="38" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="16" fill="#0F5E5E"/><path d="M12 45c8 0 10-11 20-11s12 11 20 11" stroke="#F2B544" stroke-width="5" fill="none" stroke-linecap="round"/><circle cx="12" cy="45" r="4" fill="#fff"/><path d="M32 13l12 6-12 6-12-6z" fill="#fff"/><path d="M25 22v5c4 2.5 10 2.5 14 0v-5" stroke="#fff" stroke-width="3" fill="none"/></svg>`;
+
+/* =====================================================================
+   데이터 계층: 데모(localStorage) / Firebase 를 같은 모양으로 감쌈
+   ===================================================================== */
+function seed() {
+  const t = now(), day = 864e5;
+  const L = (o) => Object.fromEntries(Object.entries(o).map(([k, d]) => [k, t - d * day]));
+  return {
+    users: {
+      demo_haneul: { nick: "하늘맘", dong: "새빛동", apt: "새빛마을 1단지", grades: ["초등 고학년"], agreedAt: t - 9 * day, policyVersion: CONFIG.policyVersion, createdAt: t - 9 * day, firstReviewId: "r1", firstLogId: "w2" },
+      demo_admin: { nick: "운영자", dong: "중앙동", apt: "", grades: ["중학생"], agreedAt: t - 20 * day, policyVersion: CONFIG.policyVersion, createdAt: t - 20 * day, firstReviewId: "r2", firstLogId: "w1" },
+      demo_doyun: { nick: "도윤아빠", dong: "푸른동", apt: "", grades: ["초등 고학년"], agreedAt: t - 7 * day, policyVersion: CONFIG.policyVersion, createdAt: t - 7 * day, firstReviewId: "r3", firstLogId: "w3" }
+    },
+    academies: {
+      a1: { name: "한빛수학학원", category: "수학", dong: "중앙동", address: "중앙동 학원가 (예시)", target: "초5 ~ 중3", shuttle: "일부 지역만", hours: "월~금 16:00~21:30", fee: "월 35만원 (주 3회) · 학부모 제보", createdBy: "demo_admin", createdAt: t - 20 * day, updatedAt: t - 3 * day, updatedNick: "도윤아빠" },
+      a2: { name: "오름영어", category: "영어", dong: "중앙동", address: "중앙동 학원가 (예시)", target: "초3 ~ 중2", shuttle: "없음", hours: "월~금 15:30~20:00", fee: "", createdBy: "demo_admin", createdAt: t - 19 * day, updatedAt: t - 19 * day, updatedNick: "운영자" },
+      a3: { name: "다온과학", category: "과학", dong: "중앙동", address: "중앙동 학원가 (예시)", target: "중1 ~ 고1", shuttle: "운영", hours: "수·금 19:00, 토 10:00", fee: "", createdBy: "demo_admin", createdAt: t - 18 * day, updatedAt: t - 18 * day, updatedNick: "운영자" },
+      a4: { name: "해솔국어논술", category: "논술", dong: "새빛동", address: "새빛동 상가 2층 (예시)", target: "초4 ~ 중3", shuttle: "없음", hours: "화·목 17:00~19:00", fee: "", createdBy: "demo_haneul", createdAt: t - 9 * day, updatedAt: t - 9 * day, updatedNick: "하늘맘" },
+      a5: { name: "바른종합학원", category: "종합", dong: "푸른동", address: "푸른동 사거리 (예시)", target: "초1 ~ 초6", shuttle: "운영", hours: "월~금 14:00~19:00", fee: "", createdBy: "demo_admin", createdAt: t - 17 * day, updatedAt: t - 17 * day, updatedNick: "운영자" }
+    },
+    wikiLogs: {
+      w1: { academyId: "a1", uid: "demo_admin", nick: "운영자", type: "create", text: "학원 등록", at: t - 20 * day },
+      w2: { academyId: "a1", uid: "demo_haneul", nick: "하늘맘", type: "story", text: "2019년 중앙동에 처음 문을 열었고, 2023년에 지금 건물로 확장 이전했어요. 초등 고학년 심화반이 유명해요.", at: t - 9 * day },
+      w3: { academyId: "a1", uid: "demo_doyun", nick: "도윤아빠", type: "edit", text: "수강료: (없음) → 월 35만원 (주 3회) · 학부모 제보", at: t - 3 * day }
+    },
+    reviews: {
+      r1: { academyId: "a1", uid: "demo_haneul", nick: "하늘맘", scores: { grade: 5, teacher: 5, care: 4, fee: 3, mood: 4 }, summary: "숙제 관리가 꼼꼼해서 습관이 잡혔어요", body: "5학년 2학기부터 보냈어요. 처음엔 숙제 양이 많아 힘들어했는데 한 학기 지나니 스스로 하더라고요. 학원비는 동네 평균보다 조금 높은 편이에요.", childGrade: "초등 고학년", goal: "중학교 수학 선행", period: "6개월~1년", current: true, likes: L({ demo_admin: 2, demo_doyun: 1 }), hidden: false, createdAt: t - 9 * day },
+      r2: { academyId: "a2", uid: "demo_admin", nick: "운영자", scores: { grade: 4, teacher: 4, care: 3, fee: 4, mood: 5 }, summary: "아이가 즐겁게 다녀요, 회화 위주", body: "문법보다 말하기 위주라 내신 대비는 따로 필요해요.", childGrade: "중학생", goal: "영어에 흥미 붙이기", period: "1년 이상", current: false, likes: L({ demo_haneul: 5 }), hidden: false, createdAt: t - 15 * day },
+      r3: { academyId: "a1", uid: "demo_doyun", nick: "도윤아빠", scores: { grade: 4, teacher: 5, care: 5, fee: 3, mood: 3 }, summary: "선생님 설명은 최고, 반 분위기는 조금 빡빡", body: "", childGrade: "초등 고학년", goal: "경시대회", period: "3~6개월", current: true, likes: L({ demo_haneul: 1, demo_admin: 1 }), hidden: false, createdAt: t - 7 * day },
+      r4: { academyId: "a5", uid: "demo_admin", nick: "운영자", scores: { grade: 3, teacher: 4, care: 4, fee: 5, mood: 4 }, summary: "셔틀이 있어서 저학년 맞벌이 집에 좋아요", body: "", childGrade: "초등 저학년", goal: "기초 다지기", period: "1년 이상", current: false, likes: L({ demo_doyun: 3 }), hidden: false, createdAt: t - 14 * day }
+    },
+    rides: {
+      d1: { type: "offer", uid: "demo_haneul", nick: "하늘맘", academyId: "a1", days: ["화", "목"], time: "17:00", pickup: "새빛마을 1단지 정문 앞", dong: "새빛동", seats: 2, note: "가는 편만 가능해요", link: "", joins: { demo_doyun: "도윤아빠" }, trouble: [], createdAt: t - 2 * day },
+      d2: { type: "need", uid: "demo_doyun", nick: "도윤아빠", academyId: "a3", days: ["토"], time: "10:00", pickup: "푸른동 주민센터 앞", dong: "푸른동", seats: 1, note: "토요일 오전만 도움 필요해요", link: "", joins: {}, trouble: [], createdAt: t - 1 * day }
+    },
+    rooms: {
+      m1: { name: "새빛동 학부모방", type: "동네", dong: "새빛동", desc: "새빛동 라이딩·학원 정보", link: "https://open.kakao.com/o/example1", code: "2580", order: 1 },
+      m2: { name: "푸른동 학부모방", type: "동네", dong: "푸른동", desc: "푸른동 라이딩·학원 정보", link: "https://open.kakao.com/o/example2", code: "1357", order: 2 },
+      m3: { name: "중앙동 학원가 하원방", type: "학원가", dong: "중앙동", desc: "학원가 하원 시간 공유", link: "https://open.kakao.com/o/example3", code: "4680", order: 3 },
+      m4: { name: "새빛마을 1단지", type: "아파트", dong: "새빛동", desc: "단지 내 라이딩 품앗이", link: "https://open.kakao.com/o/example4", code: "1004", order: 4 }
+    },
+    schedules: {
+      demo_haneul: { children: [
+        { id: "c1", label: "첫째", color: "#0F5E5E", items: [
+          { id: "i1", days: ["화", "목"], start: "17:00", end: "18:30", title: "한빛수학학원", memo: "숙제 노트 챙기기" },
+          { id: "i2", days: ["월", "수", "금"], start: "16:00", end: "17:00", title: "오름영어", memo: "단어 시험" }
+        ] }
+      ] }
+    },
+    reports: {}, roomRequests: {},
+    stats: { global: { visits: 128, members: 3 }, ["d" + ymd()]: { visits: 7 } },
+    config: { apartments: { list: [{ name: "새빛마을 1단지", dong: "새빛동" }, { name: "새빛마을 2단지", dong: "새빛동" }, { name: "푸른숲 아파트", dong: "푸른동" }] } }
+  };
+}
+
+function makeLocalBackend() {
+  const KEY = "hakding_demo_v1";
+  let store = null;
+  try { store = JSON.parse(localStorage.getItem(KEY)); } catch (e) { store = null; }
+  if (!store) store = seed();
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(store)); } catch (e) {} };
+  save();
+  const col = (c) => store[c] || (store[c] = {});
+  const clone = (o) => JSON.parse(JSON.stringify(o));
+  let user = null; const subs = [];
+  try { user = JSON.parse(sessionStorage.getItem("hakding_demo_user")); } catch (e) { user = null; }
+  const emit = () => subs.forEach((f) => f(user));
+  return {
+    db: {
+      async get(c, id) { const d = col(c)[id]; return d ? { id, ...clone(d) } : null; },
+      async list(c, where) { let a = Object.entries(col(c)).map(([id, d]) => ({ id, ...clone(d) })); if (where) a = a.filter((d) => d[where[0]] === where[2]); return a; },
+      async set(c, id, data) { col(c)[id] = clone(data); save(); },
+      async update(c, id, p) { if (!col(c)[id]) throw new Error("없는 문서"); Object.assign(col(c)[id], clone(p)); save(); },
+      async add(c, data) { const id = c.slice(0, 1) + now().toString(36) + Math.random().toString(36).slice(2, 6); col(c)[id] = clone(data); save(); return id; },
+      async del(c, id) { delete col(c)[id]; save(); },
+      async inc(c, id, f) { const d = col(c)[id] || (col(c)[id] = {}); d[f] = (d[f] || 0) + 1; save(); },
+      async setKey(c, id, m, k, v) { const d = col(c)[id]; if (!d) throw new Error("없는 문서"); d[m] = d[m] || {}; if (v === null) delete d[m][k]; else d[m][k] = v; save(); }
+    },
+    auth: {
+      onChange(cb) { subs.push(cb); cb(user); },
+      async login() { demoLoginPicker(); },
+      async loginAs(u) { user = u; try { sessionStorage.setItem("hakding_demo_user", JSON.stringify(u)); } catch (e) {} emit(); },
+      async logout() { user = null; try { sessionStorage.removeItem("hakding_demo_user"); } catch (e) {} emit(); },
+      async deleteAccount() { await this.logout(); }
+    },
+    reset() { try { localStorage.removeItem(KEY); sessionStorage.removeItem("hakding_demo_user"); sessionStorage.removeItem("hk_visited"); } catch (e) {} location.reload(); }
+  };
+}
+
+async function makeFirebaseBackend() {
+  const B = "https://www.gstatic.com/firebasejs/10.12.2/";
+  const [{ initializeApp }, A, F] = await Promise.all([import(B + "firebase-app.js"), import(B + "firebase-auth.js"), import(B + "firebase-firestore.js")]);
+  const app = initializeApp(CONFIG.firebase);
+  if (CONFIG.appCheckSiteKey) {
+    const AC = await import(B + "firebase-app-check.js");
+    AC.initializeAppCheck(app, { provider: new AC.ReCaptchaV3Provider(CONFIG.appCheckSiteKey), isTokenAutoRefreshEnabled: true });
+  }
+  const auth = A.getAuth(app); const fs = F.getFirestore(app);
+  if (CONFIG.firebase.measurementId) {
+    import(B + "firebase-analytics.js").then(async (GA) => { if (await GA.isSupported()) { const ga = GA.getAnalytics(app); track = (name, params) => { try { GA.logEvent(ga, name, params || {}); } catch (e) {} }; } }).catch(() => {});
+  }
+  const ref = (c, id) => F.doc(fs, c, id);
+  try { await A.getRedirectResult(auth); } catch (e) { console.warn(e); }
+  return {
+    db: {
+      async get(c, id) { const s = await F.getDoc(ref(c, id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
+      async list(c, where) { const q = where ? F.query(F.collection(fs, c), F.where(...where)) : F.collection(fs, c); const s = await F.getDocs(q); return s.docs.map((d) => ({ id: d.id, ...d.data() })); },
+      set: (c, id, d) => F.setDoc(ref(c, id), d),
+      update: (c, id, p) => F.updateDoc(ref(c, id), p),
+      async add(c, d) { const r = await F.addDoc(F.collection(fs, c), d); return r.id; },
+      del: (c, id) => F.deleteDoc(ref(c, id)),
+      inc: (c, id, f) => F.setDoc(ref(c, id), { [f]: F.increment(1) }, { merge: true }),
+      setKey: (c, id, m, k, v) => F.updateDoc(ref(c, id), { [m + "." + k]: v === null ? F.deleteField() : v })
+    },
+    auth: {
+      onChange(cb) { A.onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email, emailVerified: u.emailVerified, name: u.displayName } : null)); },
+      async login() {
+        const p = new A.GoogleAuthProvider(); p.setCustomParameters({ prompt: "select_account" });
+        try { await A.signInWithPopup(auth, p); }
+        catch (e) { if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment", "auth/cancelled-popup-request"].includes(e.code)) await A.signInWithRedirect(auth, p); else if (e.code !== "auth/popup-closed-by-user") throw e; }
+      },
+      logout: () => A.signOut(auth),
+      async deleteAccount() { await A.deleteUser(auth.currentUser); }
+    }
+  };
+}
+
+/* =====================================================================
+   앱 상태
+   ===================================================================== */
+let BE = null;
+const S = {
+  ready: false, user: null, profile: null, admin: false,
+  view: "home", param: null,
+  data: { academies: [], reviews: [], rides: [], rooms: [], myReviews: [], stats: {}, today: 0, schedule: null, apartments: [] },
+  ui: { cat: "전체", dong: "전체", sort: "rating", q: "", acadTab: "reviews", rankMode: "month", rideAcad: "전체", child: 0, adminTab: "stats", gateMode: "new", reviewFor: "", editReview: null, csv: null }
+};
+const passed = () => !!(S.profile && S.profile.firstReviewId && S.profile.firstLogId);
+const isAdminUser = (u) => !!u && (CONFIG.adminEmails.includes(u.email) || (DEMO && u.email === DEMO_ADMIN_EMAIL));
+
+async function loadPublic() {
+  const [acs, g, d] = await Promise.all([
+    BE.db.list("academies").catch(() => []),
+    BE.db.get("stats", "global").catch(() => null),
+    BE.db.get("stats", "d" + ymd()).catch(() => null)
+  ]);
+  S.data.academies = acs.filter((a) => !a.hidden || S.admin);
+  S.data.stats = g || {}; S.data.today = (d && d.visits) || 0;
+}
+async function loadMember() {
+  if (!S.user || !S.profile) return;
+  const tasks = [BE.db.list("reviews", ["uid", "==", S.user.uid]).then((r) => (S.data.myReviews = r)).catch(() => {})];
+  if (passed() || S.admin) {
+    tasks.push(BE.db.list("reviews").then((r) => (S.data.reviews = r)).catch((e) => console.warn(e)));
+    tasks.push(BE.db.list("rides").then((r) => (S.data.rides = r)).catch((e) => console.warn(e)));
+    tasks.push(BE.db.list("rooms").then((r) => (S.data.rooms = r.sort((a, b) => (a.order || 0) - (b.order || 0)))).catch((e) => console.warn(e)));
+  }
+  tasks.push(BE.db.get("schedules", S.user.uid).then((s) => (S.data.schedule = s || { children: [] })).catch(() => (S.data.schedule = { children: [] })));
+  tasks.push(BE.db.get("config", "apartments").then((c) => (S.data.apartments = (c && c.list) || [])).catch(() => {}));
+  if (S.admin) tasks.push(BE.db.get("adminSecrets", "neis").then((d) => (S.data.neisKeyServer = (d && d.key) || "")).catch(() => {}));
+  await Promise.all(tasks);
+}
+async function refresh() { await loadPublic(); await loadMember(); render(); }
+
+async function countVisit() {
+  try {
+    if (sessionStorage.getItem("hk_visited")) return;
+    sessionStorage.setItem("hk_visited", "1");
+  } catch (e) { return; }
+  try { await BE.db.inc("stats", "global", "visits"); await BE.db.inc("stats", "d" + ymd(), "visits"); } catch (e) { console.warn("방문 집계 실패", e); }
+}
+
+/* ---------- 계산 ---------- */
+const visibleReviews = () => S.data.reviews.filter((r) => !r.hidden || S.admin);
+function aggFor(aid) {
+  const rs = visibleReviews().filter((r) => r.academyId === aid);
+  const per = Object.fromEntries(ITEMS.map(([k]) => [k, avg(rs.map((r) => r.scores?.[k] || 0))]));
+  const overall = rs.length ? avg(ITEMS.map(([k]) => per[k])) : 0;
+  return { count: rs.length, per, overall, reviews: rs.sort((a, b) => keys(b.likes).length - keys(a.likes).length || b.createdAt - a.createdAt) };
+}
+function ranking(mode) {
+  const since = mode === "month" ? new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime() : 0;
+  const m = {};
+  visibleReviews().forEach((r) => {
+    const n = Object.values(r.likes || {}).filter((t) => (typeof t === "number" ? t : 0) >= since).length;
+    if (!m[r.uid]) m[r.uid] = { nick: r.nick, likes: 0, reviews: 0 };
+    m[r.uid].likes += n; m[r.uid].reviews += 1;
+  });
+  return Object.values(m).filter((x) => x.likes > 0).sort((a, b) => b.likes - a.likes || b.reviews - a.reviews).slice(0, 5);
+}
+const acadName = (id) => (S.data.academies.find((a) => a.id === id) || {}).name || "(삭제된 학원)";
+const dongList = () => [...new Set([...S.data.academies.map((a) => a.dong), ...S.data.rooms.map((r) => r.dong), ...S.data.apartments.map((a) => a.dong)].filter(Boolean))].sort();
+
+/* =====================================================================
+   라우팅
+   ===================================================================== */
+function go(view, param = null) {
+  const h = "#/" + view + (param ? "/" + encodeURIComponent(param) : "");
+  if (location.hash !== h) location.hash = h; else route();
+}
+function route() {
+  const [, v, p] = location.hash.split("/");
+  S.view = v || "home"; S.param = p ? decodeURIComponent(p) : null;
+  render(); window.scrollTo(0, 0);
+}
+window.addEventListener("hashchange", route);
+
+/* =====================================================================
+   렌더링
+   ===================================================================== */
+function render() {
+  const app = $("#app");
+  if (!S.ready) { app.innerHTML = `<div class="loading">학딩을 불러오는 중…</div>`; return; }
+  let v = S.view;
+  const needLogin = ["rides", "rooms", "schedule", "me", "admin", "gate", "onboard", "review"];
+  if (needLogin.includes(v) && !S.user) v = "login";
+  else if (S.user && !S.profile && v !== "privacy") v = "onboard";
+  else if (S.user && S.profile && !passed() && !S.admin && !["privacy", "me", "gate", "review", "academy"].includes(v)) v = "gate";
+  if (v === "admin" && !S.admin) v = "home";
+
+  const views = { home: vHome, academies: vAcademies, academy: vAcademy, rides: vRides, rooms: vRooms, schedule: vSchedule, me: vMe, admin: vAdmin, privacy: vPrivacy, login: vLogin, onboard: vOnboard, gate: vGate, review: vReviewForm };
+  const body = (views[v] || vHome)();
+  const tab = { home: "home", academies: "academies", academy: "academies", rides: "rides", rooms: "rooms", schedule: "schedule" }[v] || "";
+  app.innerHTML = `
+    ${DEMO ? `<div class="demo-bar"><span><b>데모 모드</b> · Firebase 연결 전, 이 브라우저에만 저장돼요</span><button data-act="demoReset">초기화</button></div>` : ""}
+    <header class="top">
+      <button class="logo" data-act="nav" data-v="home" aria-label="학딩 홈">${LOGO}<span class="wm"><b>학딩</b><small>SINCE 2026</small></span></button>
+      ${S.user ? `<button class="btn ghost sm" data-act="nav" data-v="me">${esc(S.profile?.nick || "내 정보")}${S.admin ? ' <span class="badge accent">운영자</span>' : ""}</button>` : `<button class="btn sm" data-act="login">구글로 시작하기</button>`}
+    </header>
+    <main>${body}
+      <footer class="foot"><span>© 2026 학딩 · since 2026</span><button data-act="nav" data-v="privacy">개인정보 처리방침</button></footer>
+    </main>
+    <nav class="tabs" aria-label="주요 메뉴">
+      ${[["home", "홈", icon.home], ["academies", "학원", icon.acad], ["rides", "라이딩", icon.car], ["rooms", "모임", icon.chat], ["schedule", "내 일정", icon.cal]].map(([k, l, i]) => `<button class="${tab === k ? "on" : ""}" data-act="nav" data-v="${k}" ${tab === k ? 'aria-current="page"' : ""}>${i}${l}</button>`).join("")}
+    </nav>`;
+  afterRender();
+}
+function afterRender() {
+  const q = $("#acadSearch"); if (q && S.ui.focusSearch) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); S.ui.focusSearch = false; }
+}
+
+const statsStrip = () => `
+  <div class="grid3">
+    <div class="stat"><b>${(S.data.today || 0).toLocaleString()}</b><span>오늘 방문</span></div>
+    <div class="stat"><b>${(S.data.stats.visits || 0).toLocaleString()}</b><span>누적 방문</span></div>
+    <div class="stat"><b>${(S.data.stats.members || 0).toLocaleString()}</b><span>회원 수</span></div>
+  </div>`;
+
+function acadCard(a, showRating) {
+  const g = showRating ? aggFor(a.id) : null;
+  return `<button class="acad" data-act="nav" data-v="academy" data-p="${esc(a.id)}">
+    <div class="ic">${esc(a.category || "기타")}</div>
+    <div class="grow col" style="gap:2px">
+      <span class="ellipsis" style="font-weight:700;font-size:16px">${esc(a.name)}${a.hidden ? ` <span class="badge danger">${a.closed ? "폐원 처리" : "숨김"}</span>` : ""}</span>
+      <span class="small muted ellipsis">${esc(a.dong || "동네 미입력")}${a.target ? " · " + esc(a.target) : ""}</span>
+      ${showRating ? (g.count ? `<span class="row small">${starText(g.overall)} <span class="score">${r1(g.overall)}</span><span class="muted">후기 ${g.count}</span></span>` : `<span class="small muted">아직 후기가 없어요</span>`) : `<span class="row small muted">${icon.lock} 별점·후기는 회원 공개</span>`}
+    </div>
+  </button>`;
+}
+
+/* ---------- 홈 ---------- */
+function vHome() {
+  const acs = S.data.academies;
+  if (!S.user || !passed()) {
+    return `
+    <section class="hero">
+      <span class="badge accent" style="align-self:flex-start">${esc(CONFIG.city)} 학부모 커뮤니티</span>
+      <h1>보내본 엄마·아빠가 알려주는<br>진짜 학원 이야기</h1>
+      <p>학원 후기 · 라이딩 품앗이 · 아이 학원 스케줄러를 한곳에서. 가입은 구글 버튼 한 번이면 끝나요.</p>
+      ${S.user ? `<button class="btn lg block" data-act="nav" data-v="gate">기여하고 전체 이용하기</button>` : `<button class="btn lg block" data-act="login">구글로 1초 가입</button>`}
+    </section>
+    ${statsStrip()}
+    <section class="card">
+      <div class="row between"><h2>등록된 학원 ${acs.length}곳</h2><button class="link" data-act="nav" data-v="academies">전체 보기</button></div>
+      ${acs.slice(0, 4).map((a) => acadCard(a, false)).join("") || `<div class="empty">첫 학원을 등록해 주세요</div>`}
+    </section>
+    <section class="card">
+      <h2>학딩은 이렇게 운영돼요</h2>
+      <div class="col small">
+        <div class="row" style="align-items:flex-start"><span class="badge brand">1</span><span>가입 후 <b>학원 정보 1개</b>와 <b>학원 평가 1개</b>를 남기면 모든 후기와 기능이 열려요. 다 같이 채우는 정보라서요.</span></div>
+        <div class="row" style="align-items:flex-start"><span class="badge brand">2</span><span>아이 이름·학교·사진은 받지 않아요. 수집한 정보는 절대 외부에 공유하지 않아요.</span></div>
+        <div class="row" style="align-items:flex-start"><span class="badge brand">3</span><span>동네·아파트 모임방 참여코드는 인증된 회원에게만 보여요.</span></div>
+      </div>
+    </section>`;
+  }
+  const top = acs.map((a) => ({ a, g: aggFor(a.id) })).filter((x) => x.g.count).sort((x, y) => y.g.overall - x.g.overall).slice(0, 3);
+  const recent = visibleReviews().sort((a, b) => b.createdAt - a.createdAt).slice(0, 3);
+  const rk = ranking(S.ui.rankMode);
+  const myRooms = S.data.rooms.filter((r) => r.dong === S.profile.dong || (S.profile.apt && r.name === S.profile.apt));
+  const trouble = S.data.rides.filter((r) => (r.trouble || []).includes(isoDay(0)) && (r.uid === S.user.uid || r.joins?.[S.user.uid]));
+  return `
+    <section class="col" style="gap:4px;padding:0 2px"><h1>${esc(S.profile.nick)}님, 반가워요</h1><p class="muted small">${esc(S.profile.dong)}${S.profile.apt ? " · " + esc(S.profile.apt) : ""}</p></section>
+    ${trouble.length ? `<div class="notice danger">${icon.info}<span><b>오늘 라이딩 변경</b> · ${trouble.map((r) => esc(r.nick) + "님 (" + esc(acadName(r.academyId)) + " " + esc(r.time) + ")").join(", ")}이 오늘 갑자기 힘들다고 알렸어요.</span></div>` : ""}
+    ${statsStrip()}
+    <form class="row" style="gap:8px" data-form="homeSearch" role="search">
+      <input class="input" name="q" placeholder="학원 이름으로 검색" value="${esc(S.ui.q)}" aria-label="학원 검색">
+      <button class="btn" type="submit" style="flex:none;white-space:nowrap">검색</button>
+    </form>
+    <section class="card">
+      <div class="row between"><h2>별점 높은 학원</h2><button class="link" data-act="nav" data-v="academies">전체</button></div>
+      ${top.map((x) => acadCard(x.a, true)).join("") || `<div class="empty">아직 평가가 없어요</div>`}
+    </section>
+    <section class="card">
+      <div class="row between"><h2>이달의 기여 TOP 5</h2>
+        <div class="tabbar" style="width:150px"><button class="${S.ui.rankMode === "month" ? "on" : ""}" data-act="rank" data-m="month">이번 달</button><button class="${S.ui.rankMode === "all" ? "on" : ""}" data-act="rank" data-m="all">전체</button></div>
+      </div>
+      <p class="small muted">${esc(CONFIG.giftText)}</p>
+      <div>${rk.map((x, i) => `<div class="rank"><span class="n">${i + 1}</span><span class="grow" style="font-weight:600">${esc(x.nick)}</span><span class="row small" style="gap:4px;color:#C2410C">${icon.heartFill}<b>${x.likes}</b></span><span class="small muted">후기 ${x.reviews}</span></div>`).join("") || `<div class="empty">좋아요를 받은 후기가 아직 없어요</div>`}</div>
+    </section>
+    <section class="card">
+      <div class="row between"><h2>최근 후기</h2></div>
+      ${recent.map((r) => `<button class="acad" style="flex-direction:column;align-items:flex-start;gap:4px" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}"><span class="small muted">${esc(acadName(r.academyId))}</span><span style="font-weight:600">“${esc(r.summary)}”</span><span class="row small">${starText(avg(ITEMS.map(([k]) => r.scores[k])))}<span class="muted">${esc(r.nick)}</span></span></button>`).join("") || `<div class="empty">아직 후기가 없어요</div>`}
+    </section>
+    <section class="card">
+      <div class="row between"><h2>우리 동네 모임방</h2><button class="link" data-act="nav" data-v="rooms">전체</button></div>
+      ${myRooms.length ? myRooms.map((r) => `<div class="row between"><span style="font-weight:600">${esc(r.name)}</span><button class="btn sm ghost" data-act="nav" data-v="rooms">참여코드 보기</button></div>`).join("") : `<p class="small muted">${esc(S.profile.dong)} 모임방이 아직 없어요. 모임 탭에서 개설을 요청해 주세요.</p>`}
+    </section>`;
+}
+
+/* ---------- 학원 목록 ---------- */
+function acadListData() {
+  const show = S.user && (passed() || S.admin);
+  let list = S.data.academies.slice();
+  if (S.ui.cat !== "전체") list = list.filter((a) => a.category === S.ui.cat);
+  if (S.ui.dong !== "전체") list = list.filter((a) => a.dong === S.ui.dong);
+  if (S.ui.q) list = list.filter((a) => (a.name + " " + (a.address || "")).includes(S.ui.q));
+  const withAgg = list.map((a) => ({ a, g: show ? aggFor(a.id) : { count: 0, overall: 0 } }));
+  const sorters = { rating: (x, y) => y.g.overall - x.g.overall || y.g.count - x.g.count, count: (x, y) => y.g.count - x.g.count, name: (x, y) => x.a.name.localeCompare(y.a.name, "ko"), recent: (x, y) => (y.a.updatedAt || 0) - (x.a.updatedAt || 0) };
+  withAgg.sort(sorters[show ? S.ui.sort : "name"]);
+  return { show, withAgg };
+}
+function acadListHtml() {
+  const { show, withAgg } = acadListData();
+  return `<p class="small muted" style="padding:0 2px">${withAgg.length}곳</p>
+    <div class="col">${withAgg.slice(0, 300).map((x) => acadCard(x.a, show)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>${withAgg.length > 300 ? `<p class="small muted">검색어나 과목으로 좁혀 주세요 (상위 300곳 표시)</p>` : ""}`;
+}
+function vAcademies() {
+  const show = S.user && (passed() || S.admin);
+  return `
+    <section class="row between" style="padding:0 2px"><h1>학원 정보</h1>${S.user && (passed() || S.admin) ? `<button class="btn sm" data-act="addAcad">학원 추가</button>` : ""}</section>
+    <input id="acadSearch" class="input" placeholder="학원 이름·주소 검색" value="${esc(S.ui.q)}" data-input="search" aria-label="학원 검색">
+    <div class="chips" role="group" aria-label="과목">${["전체", ...CATS].map((c) => `<button class="chip ${S.ui.cat === c ? "on" : ""}" data-act="cat" data-c="${c}">${c}</button>`).join("")}</div>
+    <div class="grid2">
+      <select class="input" data-input="dong" aria-label="동네">${["전체", ...dongList()].map((d) => `<option ${S.ui.dong === d ? "selected" : ""}>${esc(d)}</option>`).join("")}</select>
+      <select class="input" data-input="sort" aria-label="정렬" ${show ? "" : "disabled"}>${[["rating", "별점 높은 순"], ["count", "후기 많은 순"], ["name", "이름 순"], ["recent", "최근 수정 순"]].map(([k, l]) => `<option value="${k}" ${S.ui.sort === k ? "selected" : ""}>${l}</option>`).join("")}</select>
+    </div>
+    <div id="acadList">${acadListHtml()}</div>`;
+}
+
+/* ---------- 학원 상세 ---------- */
+function vAcademy() {
+  const a = S.data.academies.find((x) => x.id === S.param);
+  if (!a) return `<div class="empty">학원을 찾을 수 없어요. <button class="link" data-act="nav" data-v="academies">목록으로</button></div>`;
+  const show = S.user && (passed() || S.admin);
+  const g = show ? aggFor(a.id) : null;
+  const t = S.ui.acadTab;
+  let tabBody = "";
+  if (!show) {
+    tabBody = `<div class="locked">${icon.lock}<b>별점·후기·학원 이야기는 회원 공개예요</b><span class="small">학원 정보 1개와 평가 1개를 남기면 모두 볼 수 있어요.</span>${S.user ? `<button class="btn" data-act="nav" data-v="gate">기여하러 가기</button>` : `<button class="btn" data-act="login">구글로 시작하기</button>`}</div>`;
+  } else if (t === "reviews") {
+    tabBody = g.reviews.map((r) => reviewHtml(r)).join("") || `<div class="empty">첫 후기를 남겨 주세요</div>`;
+  } else {
+    tabBody = `<div id="wikiBox"><div class="empty">불러오는 중…</div></div>`;
+    setTimeout(() => loadWiki(a.id, t), 0);
+  }
+  const mine = S.data.myReviews.find((r) => r.academyId === a.id);
+  return `
+    <button class="link row" style="align-self:flex-start" data-act="back">${icon.back} 뒤로</button>
+    <section class="card">
+      <div class="row between" style="align-items:flex-start">
+        <div class="col" style="gap:4px"><span class="badge brand" style="align-self:flex-start">${esc(a.category)}</span><h1>${esc(a.name)}</h1></div>
+        ${S.user && S.profile ? `<button class="btn ghost sm" data-act="editAcad" data-id="${esc(a.id)}">정보 수정</button>` : ""}
+      </div>
+      <dl class="info">
+        <dt>동네</dt><dd>${esc(a.dong || "-")}</dd>
+        <dt>주소</dt><dd>${esc(a.address || "-")}</dd>
+        <dt>대상</dt><dd>${esc(a.target || "-")}</dd>
+        <dt>셔틀</dt><dd>${esc(a.shuttle || "모름")}</dd>
+        <dt>수업 시간</dt><dd>${esc(a.hours || "-")}</dd>
+        ${a.phone ? `<dt>전화</dt><dd><a href="tel:${esc(String(a.phone).replace(/[^0-9-]/g, ""))}">${esc(a.phone)}</a></dd>` : ""}
+        <dt>수강료</dt><dd>${a.fee ? esc(a.fee) : '<span class="muted">정보 없음 · 아시면 수정해 주세요</span>'}</dd>
+        ${a.courses ? `<dt>교습과정</dt><dd class="small">${esc(a.courses)}</dd>` : ""}
+        ${a.feeOfficial ? `<dt>신고 수강료</dt><dd class="small">${esc(a.feeOfficial)} <span class="muted">(교육청 신고 기준)</span></dd>` : ""}
+      </dl>
+      <p class="xs muted">누구나 고칠 수 있는 정보예요 · 마지막 수정 ${esc(a.updatedNick || "")} ${fmtDate(a.updatedAt)}${a.source === "neis" ? " · 기본정보 출처: 나이스 교육정보 개방포털" : ""}</p>
+      ${a.closed ? `<div class="notice danger">${icon.info}<span>운영자가 <b>폐원 처리</b>한 학원이에요. 회원에게는 보이지 않아요.</span></div>` : ""}
+      <div class="row wrap between">
+        ${S.user && S.profile ? `<button class="link xs" style="color:var(--ink3)" data-act="report" data-type="academy" data-id="${esc(a.id)}">폐원·정보 오류 신고</button>` : "<span></span>"}
+        ${S.admin ? `<span class="row" style="gap:4px">${a.hidden ? `<button class="btn ghost sm" data-act="acadRestore" data-id="${esc(a.id)}">복구</button>` : `<button class="btn warn sm" data-act="acadClose" data-id="${esc(a.id)}">폐원 처리</button>`}<button class="btn danger sm" data-act="acadDelete" data-id="${esc(a.id)}">완전 삭제</button></span>` : ""}
+      </div>
+    </section>
+    ${show ? `<section class="card">
+      <div class="row between"><h2>학부모 평가</h2>${g.count ? `<span class="row">${starText(g.overall)}<b class="score" style="font-size:18px">${r1(g.overall)}</b></span>` : ""}</div>
+      ${g.count ? ITEMS.map(([k, l]) => `<div class="rate-row"><span>${l}</span><div class="bar"><i style="width:${(g.per[k] / 5) * 100}%"></i></div><b>${r1(g.per[k])}</b></div>`).join("") + `<p class="xs muted">후기 ${g.count}개 평균</p>` : `<p class="small muted">아직 평가가 없어요.</p>`}
+      ${mine ? `<button class="btn ghost block" data-act="writeReview" data-id="${esc(a.id)}" data-edit="${esc(mine.id)}">내 후기 수정</button>` : `<button class="btn block" data-act="writeReview" data-id="${esc(a.id)}">이 학원 평가하기</button>`}
+    </section>` : ""}
+    <div class="tabbar" role="tablist">${[["reviews", "후기"], ["story", "학원 이야기"], ["history", "수정 이력"]].map(([k, l]) => `<button role="tab" aria-selected="${t === k}" class="${t === k ? "on" : ""}" data-act="acadTab" data-t="${k}">${l}</button>`).join("")}</div>
+    <section class="card">${tabBody}</section>
+    ${show && t === "story" ? `<button class="btn ghost block" data-act="addStory" data-id="${esc(a.id)}">이 학원 이야기 보태기</button>` : ""}`;
+}
+function reviewHtml(r) {
+  const liked = S.user && r.likes?.[S.user.uid];
+  const own = S.user && r.uid === S.user.uid;
+  const sc = avg(ITEMS.map(([k]) => r.scores?.[k] || 0));
+  return `<article class="review">
+    <div class="row between"><span class="row">${starText(sc)}<b class="small">${r1(sc)}</b></span><span class="xs muted">${fmtDate(r.createdAt)}</span></div>
+    <b>“${esc(r.summary)}”</b>
+    ${r.body ? `<p class="small" style="white-space:pre-line">${esc(r.body)}</p>` : ""}
+    <div class="row wrap" style="gap:5px"><span class="badge">${esc(r.childGrade)}</span>${r.goal ? `<span class="badge">목표: ${esc(r.goal)}</span>` : ""}<span class="badge">${esc(r.period)}${r.current ? " · 다니는 중" : ""}</span></div>
+    <div class="xs muted">${ITEMS.map(([k, l]) => `${l} ${r.scores?.[k] ?? "-"}`).join(" · ")}</div>
+    <div class="row between">
+      <span class="small" style="font-weight:600">${esc(r.nick)}${r.hidden ? ' <span class="badge danger">숨김 처리됨</span>' : ""}</span>
+      <span class="row" style="gap:2px">
+        <button class="btn ghost sm" ${own ? "disabled" : ""} data-act="like" data-id="${esc(r.id)}" aria-pressed="${!!liked}" aria-label="좋아요">${liked ? icon.heartFill : icon.heart} ${keys(r.likes).length}</button>
+        ${own ? `<button class="link" data-act="delReview" data-id="${esc(r.id)}">삭제</button>` : `<button class="link" style="color:var(--ink3)" data-act="report" data-type="review" data-id="${esc(r.id)}">신고</button>`}
+        ${S.admin ? `<button class="link" data-act="hide" data-col="reviews" data-id="${esc(r.id)}" data-h="${r.hidden ? "0" : "1"}">${r.hidden ? "복구" : "숨김"}</button>` : ""}
+      </span>
+    </div>
+  </article>`;
+}
+async function loadWiki(aid, tab) {
+  const box = $("#wikiBox"); if (!box) return;
+  let logs = [];
+  try { logs = await BE.db.list("wikiLogs", ["academyId", "==", aid]); } catch (e) { box.innerHTML = `<div class="empty">불러오지 못했어요</div>`; return; }
+  logs.sort((a, b) => b.at - a.at);
+  if (tab === "story") logs = logs.filter((l) => l.type === "story" && (!l.hidden || S.admin));
+  const label = { create: "등록", edit: "정보 수정", story: "이야기" };
+  if (!$("#wikiBox")) return;
+  $("#wikiBox").innerHTML = logs.length ? logs.map((l) => `
+    <div class="review">
+      <div class="row between"><span class="row" style="gap:6px"><span class="badge ${l.type === "story" ? "accent" : ""}">${label[l.type] || l.type}</span><b class="small">${esc(l.nick)}</b></span><span class="xs muted">${fmtDate(l.at)}</span></div>
+      <p class="small" style="white-space:pre-line">${esc(l.text)}${l.hidden ? ' <span class="badge danger">숨김</span>' : ""}</p>
+      ${l.type === "story" && S.user && l.uid !== S.user.uid ? `<button class="link xs" style="align-self:flex-end;color:var(--ink3)" data-act="report" data-type="wikiLog" data-id="${esc(l.id)}">신고</button>` : ""}
+      ${S.admin && l.type === "story" ? `<button class="link xs" style="align-self:flex-end" data-act="hide" data-col="wikiLogs" data-id="${esc(l.id)}" data-h="${l.hidden ? "0" : "1"}">${l.hidden ? "복구" : "숨김"}</button>` : ""}
+    </div>`).join("") : `<div class="empty">${tab === "story" ? "이 학원의 역사와 이야기를 처음으로 남겨 주세요.<br>언제 생겼는지, 어떤 선생님이 유명한지, 어떻게 변해왔는지." : "이력이 없어요"}</div>`;
+}
+
+/* ---------- 학원 정보 폼(추가/수정) ---------- */
+function acadFormFields(a = {}) {
+  return `
+    ${a.id ? "" : `<label class="f">학원 이름 *<input class="input" name="name" required maxlength="40" placeholder="예: 한빛수학학원"></label>`}
+    <label class="f">과목 *<select class="input" name="category" required>${CATS.map((c) => `<option ${a.category === c ? "selected" : ""}>${c}</option>`).join("")}</select></label>
+    <label class="f">동네 *<input class="input" name="dong" required maxlength="20" list="dongs" value="${esc(a.dong || "")}" placeholder="예: 중앙동"></label>
+    <datalist id="dongs">${dongList().map((d) => `<option value="${esc(d)}">`).join("")}</datalist>
+    <label class="f">주소 <span class="hint">건물 이름까지만 적어도 돼요</span><input class="input" name="address" maxlength="80" value="${esc(a.address || "")}"></label>
+    <label class="f">전화<input class="input" name="phone" maxlength="20" inputmode="tel" value="${esc(a.phone || "")}"></label>
+    <label class="f">대상 학년<input class="input" name="target" maxlength="30" value="${esc(a.target || "")}" placeholder="예: 초5 ~ 중3"></label>
+    <label class="f">셔틀<select class="input" name="shuttle">${SHUTTLE.map((s) => `<option ${a.shuttle === s ? "selected" : ""}>${s}</option>`).join("")}</select></label>
+    <label class="f">수업 시간<input class="input" name="hours" maxlength="60" value="${esc(a.hours || "")}" placeholder="예: 월~금 16:00~21:30"></label>
+    <label class="f">수강료 <span class="hint">학원이 게시한 금액이나 직접 낸 금액. 예: 월 35만원 (주 3회)</span><input class="input" name="fee" maxlength="60" value="${esc(a.fee || "")}"></label>`;
+}
+
+/* ---------- 로그인/가입 ---------- */
+function vLogin() {
+  return `<section class="card" style="align-items:center;text-align:center;padding:28px 20px">
+    ${LOGO.replace('width="38" height="38"', 'width="64" height="64"')}
+    <h1>학딩 시작하기</h1>
+    <p class="muted small">구글 계정으로 1초 만에 가입해요.<br>이메일은 로그인에만 쓰이고 다른 회원에게 보이지 않아요.</p>
+    <button class="btn lg block" data-act="login">구글로 계속하기</button>
+    <button class="link small" data-act="nav" data-v="privacy">개인정보 처리방침 보기</button>
+  </section>`;
+}
+function vOnboard() {
+  const apts = S.data.apartments;
+  return `
+    <section class="col" style="gap:6px;padding:0 2px"><div class="steps"><i class="on"></i><i></i><i></i></div><h1>프로필 만들기</h1><p class="muted small">최소한의 정보만 받아요. 아이 이름·학교·사진은 받지 않아요.</p></section>
+    <form class="card" data-form="onboard">
+      <label class="f">닉네임 * <span class="hint">다른 회원에게 보이는 이름이에요. 예: 하늘맘, 도윤아빠</span><input class="input" name="nick" required maxlength="12" minlength="2"></label>
+      <label class="f">사는 동네 *<input class="input" name="dong" required maxlength="20" list="dongs2" placeholder="예: 새빛동"></label>
+      <datalist id="dongs2">${dongList().map((d) => `<option value="${esc(d)}">`).join("")}</datalist>
+      <label class="f">아파트·단지 <span class="hint">선택 · 같은 단지 모임방 안내에 써요</span><input class="input" name="apt" maxlength="30" list="apts"></label>
+      <datalist id="apts">${apts.map((a) => `<option value="${esc(a.name)}">${esc(a.dong)}</option>`).join("")}</datalist>
+      <fieldset><legend>아이 학년대 * <span class="hint" style="font-weight:400">(여러 개 선택 가능)</span></legend>
+        <div class="chips wrap">${GRADES.map((g) => `<label class="check" style="padding:2px 8px 2px 0"><input type="checkbox" name="grades" value="${g}">${g}</label>`).join("")}</div>
+      </fieldset>
+      <div class="col" style="gap:0;border-top:1px solid var(--line);padding-top:8px">
+        <label class="check"><input type="checkbox" id="agreeAll" data-act="agreeAll"><b>아래 내용에 모두 동의해요</b></label>
+        <label class="check"><input type="checkbox" name="agree1" required class="agree"><span>[필수] 개인정보 수집·이용 동의 — 닉네임, 동네, 아파트(선택), 아이 학년대, 작성한 글. 서비스 제공 목적, <b>탈퇴 시 즉시 삭제, 외부 제공 없음</b>. <button type="button" class="link small" data-act="policyModal">전문 보기</button></span></label>
+        <label class="check"><input type="checkbox" name="agree2" required class="agree"><span>[필수] 만 14세 이상의 보호자(학부모)예요.</span></label>
+        <label class="check"><input type="checkbox" name="agree3" required class="agree"><span>[필수] 후기는 직접 경험한 사실로 쓰고, 특정인 비방·허위 사실은 쓰지 않을게요.</span></label>
+      </div>
+      <button class="btn lg block" type="submit">다음</button>
+      <button class="link small" type="button" data-act="logout">다른 계정으로 로그인</button>
+    </form>`;
+}
+
+/* ---------- 기여 게이트 ---------- */
+function vGate() {
+  const p = S.profile; const s1 = !!p.firstLogId, s2 = !!p.firstReviewId;
+  const mode = S.ui.gateMode;
+  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  let step = "";
+  if (!s1) {
+    step = `
+      <section class="card">
+        <span class="badge brand" style="align-self:flex-start">1단계 · 학원 정보 1개</span>
+        <h2>아는 학원 정보를 하나 남겨 주세요</h2>
+        <div class="tabbar"><button class="${mode === "new" ? "on" : ""}" data-act="gateMode" data-m="new">새 학원 등록</button><button class="${mode === "story" ? "on" : ""}" data-act="gateMode" data-m="story">기존 학원에 정보 보태기</button></div>
+        ${mode === "new" ? `<form class="col" data-form="newAcad">${acadFormFields()}<button class="btn lg block" type="submit">학원 등록하기</button></form>`
+        : `<form class="col" data-form="gateStory">
+            <label class="f">학원 선택 *<select class="input" name="academyId" required><option value="">학원을 골라 주세요</option>${acs.map((a) => `<option value="${esc(a.id)}">${esc(a.name)} (${esc(a.dong || "")})</option>`).join("")}</select></label>
+            <label class="f">보탤 정보 * <span class="hint">학원 역사, 선생님, 반 구성, 시험 대비 방식, 수강료 등 아는 사실 (20자 이상)</span><textarea class="input" name="text" required minlength="20" maxlength="800" placeholder="예: 2021년에 개원했고 원장님이 직접 중등 심화반을 가르쳐요. 레벨 테스트 후 반 배정해요."></textarea></label>
+            <button class="btn lg block" type="submit">정보 보태기</button>
+          </form>`}
+      </section>`;
+  } else if (!s2) {
+    step = reviewFormHtml(S.ui.reviewFor || "", null, true);
+  } else {
+    step = `<section class="card"><h2>모든 기능이 열렸어요</h2><button class="btn lg block" data-act="nav" data-v="home">홈으로</button></section>`;
+  }
+  return `
+    <section class="col" style="gap:6px;padding:0 2px">
+      <div class="steps"><i class="on"></i><i class="${s1 ? "on" : ""}"></i><i class="${s2 ? "on" : ""}"></i></div>
+      <h1>${esc(p.nick)}님, 두 가지만 남겨 주세요</h1>
+      <p class="muted small">학딩은 학부모가 함께 채우는 정보로 운영돼요. <b>학원 정보 1개 + 학원 평가 1개</b>를 남기면 모든 후기, 모임방 참여코드, 라이딩, 스케줄러가 열려요.</p>
+    </section>
+    <div class="grid2">
+      <div class="stat" style="border:2px solid ${s1 ? "var(--brand)" : "transparent"}"><b>${s1 ? "완료" : "1"}</b><span>학원 정보 등록</span></div>
+      <div class="stat" style="border:2px solid ${s2 ? "var(--brand)" : "transparent"}"><b>${s2 ? "완료" : "2"}</b><span>학원 평가 작성</span></div>
+    </div>
+    ${step}`;
+}
+
+/* ---------- 후기 폼 ---------- */
+function reviewFormHtml(aid, edit, isGate) {
+  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  const e = edit || {};
+  return `
+    <form class="card" data-form="review" data-edit="${esc(e.id || "")}" data-gate="${isGate ? 1 : 0}">
+      ${isGate ? `<span class="badge brand" style="align-self:flex-start">2단계 · 학원 평가 1개</span>` : ""}
+      <h2>${edit ? "후기 수정" : "학원 평가하기"}</h2>
+      <label class="f">학원 *<select class="input" name="academyId" required ${edit ? "disabled" : ""}><option value="">보내본 학원을 골라 주세요</option>${acs.map((a) => `<option value="${esc(a.id)}" ${(e.academyId || aid) === a.id ? "selected" : ""}>${esc(a.name)} (${esc(a.dong || "")})</option>`).join("")}</select></label>
+      ${ITEMS.map(([k, l]) => `<fieldset><legend>${l} *</legend><div class="star-input">${[1, 2, 3, 4, 5].map((n) => `<input type="radio" id="s_${k}_${n}" name="${k}" value="${n}" required ${e.scores?.[k] === n ? "checked" : ""}><label for="s_${k}_${n}">${n}</label>`).join("")}</div></fieldset>`).join("")}
+      <p class="xs muted">1 아쉬움 · 3 보통 · 5 매우 만족</p>
+      <label class="f">한 줄 요약 *<input class="input" name="summary" required maxlength="60" value="${esc(e.summary || "")}" placeholder="예: 숙제 관리가 꼼꼼해서 습관이 잡혔어요"></label>
+      <label class="f">자세한 후기 <span class="hint">내가 보내보니 어땠는지, 우리 아이 상황에선 어땠는지</span><textarea class="input" name="body" maxlength="1500" placeholder="예: 5학년 2학기부터 보냈어요. 처음엔 숙제가 많아 힘들어했지만…">${esc(e.body || "")}</textarea></label>
+      <div class="grid2">
+        <label class="f">아이 학년 *<select class="input" name="childGrade" required>${GRADES.map((g) => `<option ${e.childGrade === g ? "selected" : ""}>${g}</option>`).join("")}</select></label>
+        <label class="f">다닌 기간 *<select class="input" name="period" required>${PERIODS.map((g) => `<option ${e.period === g ? "selected" : ""}>${g}</option>`).join("")}</select></label>
+      </div>
+      <label class="f">아이 목표 <span class="hint">예: 수학 내신 1등급, 영어 흥미 붙이기</span><input class="input" name="goal" maxlength="40" value="${esc(e.goal || "")}"></label>
+      <label class="check"><input type="checkbox" name="current" ${e.current ? "checked" : ""}>지금도 다니고 있어요</label>
+      <div class="notice">${icon.info}<span>직접 경험한 사실 위주로 써 주세요. 특정 강사 실명 비방이나 확인되지 않은 소문은 신고 시 숨김 처리될 수 있어요.</span></div>
+      <button class="btn lg block" type="submit">${edit ? "수정 완료" : "평가 등록"}</button>
+      ${isGate ? "" : `<button class="link small" type="button" data-act="back">취소</button>`}
+    </form>`;
+}
+function vReviewForm() {
+  const edit = S.ui.editReview ? S.data.myReviews.find((r) => r.id === S.ui.editReview) : null;
+  return reviewFormHtml(S.param || "", edit, false);
+}
+
+/* ---------- 라이딩 ---------- */
+function vRides() {
+  let list = S.data.rides.slice().sort((a, b) => b.createdAt - a.createdAt);
+  if (S.ui.rideAcad !== "전체") list = list.filter((r) => r.academyId === S.ui.rideAcad);
+  const today = isoDay(0);
+  const used = [...new Set(S.data.rides.map((r) => r.academyId))];
+  return `
+    <section class="row between" style="padding:0 2px"><h1>라이딩 품앗이</h1><button class="btn sm" data-act="rideForm">글쓰기</button></section>
+    <div class="notice">${icon.info}<span>학딩은 학부모끼리 <b>무상으로</b> 돕는 품앗이를 연결만 해요. 돈을 받고 태우는 것(기름값 포함)은 법적으로 문제가 될 수 있어 금지예요. 픽업 장소는 집 주소 대신 단지 정문·공용 장소로 적어 주세요.</span></div>
+    <select class="input" data-input="rideAcad" aria-label="학원별 보기"><option value="전체">전체 학원</option>${used.map((id) => `<option value="${esc(id)}" ${S.ui.rideAcad === id ? "selected" : ""}>${esc(acadName(id))}</option>`).join("")}</select>
+    <div class="col">${list.map((r) => {
+      const own = r.uid === S.user.uid, joined = !!r.joins?.[S.user.uid];
+      const tr = (r.trouble || []).filter((d) => d >= today).sort();
+      const jn = Object.values(r.joins || {});
+      return `<article class="ride ${tr.length ? "trouble" : ""}">
+        <div class="row between"><span class="badge ${r.type === "offer" ? "brand" : "warn"}">${r.type === "offer" ? "태워줄게요" : "도움 필요해요"}</span><span class="xs muted">${fmtDate(r.createdAt)}</span></div>
+        ${tr.length ? `<div class="notice danger" style="padding:8px 12px">${icon.info}<span><b>갑자기 힘들어요</b> · ${tr.map((d) => (d === today ? "오늘" : md(d))).join(", ")}</span></div>` : ""}
+        <b style="font-size:16px">${esc(acadName(r.academyId))}</b>
+        <div class="small">${esc((r.days || []).join("·"))} ${esc(r.time)} · <b>픽업</b> ${esc(r.pickup)}</div>
+        <div class="small muted">${esc(r.nick)} · ${esc(r.dong)}${r.type === "offer" ? ` · 자리 ${jn.length}/${r.seats}` : ""}</div>
+        ${r.note ? `<p class="small">${esc(r.note)}</p>` : ""}
+        ${jn.length ? `<div class="xs muted">${r.type === "offer" ? "함께 타는 집" : "도와주겠다는 집"}: ${jn.map(esc).join(", ")}</div>` : ""}
+        <div class="row wrap">
+          ${own ? `
+            <button class="btn warn sm" data-act="trouble" data-id="${esc(r.id)}">갑자기 힘들어요</button>
+            ${tr.length ? `<button class="btn ghost sm" data-act="troubleClear" data-id="${esc(r.id)}">알림 해제</button>` : ""}
+            <button class="link" data-act="delRide" data-id="${esc(r.id)}">삭제</button>`
+          : `<button class="btn sm ${joined ? "ghost" : ""}" data-act="join" data-id="${esc(r.id)}" ${!joined && r.type === "offer" && jn.length >= r.seats ? "disabled" : ""}>${joined ? "신청 취소" : r.type === "offer" ? "함께 타기 신청" : "제가 도울게요"}</button>
+             ${safeLink(r.link) && joined ? `<a class="btn ghost sm" href="${esc(safeLink(r.link))}" target="_blank" rel="noopener">오픈채팅으로 연락</a>` : ""}
+             <button class="link" style="color:var(--ink3)" data-act="report" data-type="ride" data-id="${esc(r.id)}">신고</button>`}
+          ${S.admin && !own ? `<button class="link" data-act="delRide" data-id="${esc(r.id)}">관리자 삭제</button>` : ""}
+        </div>
+      </article>`;
+    }).join("") || `<div class="empty">아직 라이딩 글이 없어요. 첫 글을 남겨 주세요.</div>`}</div>`;
+}
+function rideFormModal() {
+  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
+  modal(`<form class="col" data-form="ride">
+    <h2>라이딩 글쓰기</h2>
+    <fieldset><legend>종류 *</legend><div class="row"><label class="check"><input type="radio" name="type" value="offer" checked>태워줄게요</label><label class="check"><input type="radio" name="type" value="need">도움 필요해요</label></div></fieldset>
+    <label class="f">학원 *<select class="input" name="academyId" required><option value="">선택</option>${acs.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("")}</select></label>
+    <fieldset><legend>요일 *</legend><div class="grid3" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${DAYS.map((d) => `<label class="check" style="flex-direction:column;align-items:center;gap:2px;padding:0"><input type="checkbox" name="days" value="${d}">${d}</label>`).join("")}</div></fieldset>
+    <div class="grid2">
+      <label class="f">출발 시간 *<input class="input" type="time" name="time" required step="600" value="16:30"></label>
+      <label class="f">자리 수<input class="input" type="number" name="seats" min="1" max="6" value="2"></label>
+    </div>
+    <label class="f">픽업 장소 * <span class="hint">본인이 편한 공용 장소. 예: 1단지 정문 앞</span><input class="input" name="pickup" required maxlength="40"></label>
+    <label class="f">메모<input class="input" name="note" maxlength="80" placeholder="예: 가는 편만 가능해요"></label>
+    <label class="f">내 카카오 오픈채팅 링크 <span class="hint">선택 · 신청한 분에게만 보여요 (https://open.kakao.com/…)</span><input class="input" name="link" maxlength="120"></label>
+    <p class="xs muted">무상 품앗이만 가능해요. 비용을 받는 라이딩 글은 삭제돼요.</p>
+    <button class="btn lg block" type="submit">올리기</button>
+  </form>`);
+}
+
+/* ---------- 모임방 ---------- */
+function vRooms() {
+  const groups = {};
+  S.data.rooms.forEach((r) => (groups[r.type || "기타"] = groups[r.type || "기타"] || []).push(r));
+  const mine = (r) => r.dong === S.profile.dong || (S.profile.apt && r.name === S.profile.apt);
+  return `
+    <section class="col" style="gap:4px;padding:0 2px"><h1>동네·아파트 모임방</h1><p class="small muted">카카오 오픈채팅방이에요. 참여코드는 인증된 학딩 회원에게만 보여요. 코드는 외부에 공유하지 말아 주세요.</p></section>
+    ${Object.entries(groups).map(([t, rs]) => `
+      <section class="card"><h2>${esc(t)}</h2>
+        ${rs.map((r) => `<div class="list-item" style="flex-direction:column;align-items:stretch;gap:6px">
+          <div class="row between"><b>${esc(r.name)} ${mine(r) ? '<span class="badge brand">우리 동네</span>' : ""}</b>${S.admin ? `<button class="link" data-act="roomEdit" data-id="${esc(r.id)}">수정</button>` : ""}</div>
+          ${r.desc ? `<span class="small muted">${esc(r.desc)}</span>` : ""}
+          <div id="code_${esc(r.id)}">${S.ui["show_" + r.id] ? `<div class="row wrap"><span class="small muted">참여코드</span><span class="code">${esc(r.code || "없음")}</span>${safeLink(r.link) ? `<a class="btn sm" href="${esc(safeLink(r.link))}" target="_blank" rel="noopener">입장하기</a>` : ""}</div>` : `<button class="btn ghost sm" data-act="showCode" data-id="${esc(r.id)}">${icon.lock} 참여코드 보기</button>`}</div>
+        </div>`).join("")}
+      </section>`).join("") || `<div class="empty">아직 개설된 방이 없어요.</div>`}
+    <section class="card">
+      <h2>우리 동네·단지 방이 없나요?</h2>
+      <form class="col" data-form="roomReq">
+        <label class="f">원하는 방 이름<input class="input" name="name" required maxlength="30" value="${esc(S.profile.apt || S.profile.dong + " 학부모방")}"></label>
+        <button class="btn ghost block" type="submit">개설 요청하기</button>
+      </form>
+    </section>
+    ${S.admin ? `<button class="btn block" data-act="roomEdit" data-id="">관리자: 방 추가</button>` : ""}`;
+}
+
+/* ---------- 스케줄러 ---------- */
+function vSchedule() {
+  const sc = S.data.schedule || { children: [] };
+  const kids = sc.children || [];
+  const ci = Math.min(S.ui.child, Math.max(0, kids.length - 1));
+  const kid = kids[ci];
+  const td = todayDay();
+  const todayItems = kid ? kid.items.filter((i) => i.days.includes(td)).sort((a, b) => a.start.localeCompare(b.start)) : [];
+  const nowHM = new Date().toTimeString().slice(0, 5);
+  const next = todayItems.find((i) => i.start >= nowHM);
+  return `
+    <section class="col" style="gap:4px;padding:0 2px"><h1>아이 학원 스케줄러</h1><p class="small muted">나만 볼 수 있어요. 아이 이름 대신 '첫째', '둘째'처럼 적어 주세요.</p></section>
+    <div class="chips">${kids.map((k, i) => `<button class="chip ${i === ci ? "on" : ""}" data-act="child" data-i="${i}">${esc(k.label)}</button>`).join("")}<button class="chip" data-act="addChild">+ 아이 추가</button></div>
+    ${!kid ? `<div class="card"><div class="empty">아이를 추가하고 학원 시간표를 등록해 보세요.<br>요일마다 다른 학원 일정을 한눈에 볼 수 있어요.</div><button class="btn block" data-act="addChild">아이 추가</button></div>` : `
+    <section class="hero" style="background:${esc(kid.color)}">
+      <span class="small" style="opacity:.9">${esc(kid.label)} · 오늘(${td}) 일정</span>
+      ${todayItems.length ? todayItems.map((i) => `<div class="row between" style="border-top:1px solid rgba(255,255,255,.2);padding-top:8px"><b style="font-size:18px">${esc(i.start)} ${esc(i.title)}</b><span class="small">~${esc(i.end)}</span></div>${i.memo ? `<span class="small" style="opacity:.9;margin-top:-6px">준비물·메모: ${esc(i.memo)}</span>` : ""}`).join("") : `<b style="font-size:18px">오늘은 학원이 없어요</b>`}
+      ${next ? `<span class="badge accent" style="align-self:flex-start">다음: ${esc(next.start)} ${esc(next.title)}</span>` : ""}
+      <button class="btn" data-act="copyToday">아이에게 보낼 문자 복사</button>
+    </section>
+    <section class="card">
+      <div class="row between"><h2>주간 시간표</h2><button class="btn sm" data-act="addItem">일정 추가</button></div>
+      ${DAYS.map((d) => { const its = kid.items.filter((i) => i.days.includes(d)).sort((a, b) => a.start.localeCompare(b.start)); return `<div class="sched-day ${d === td ? "today" : ""}"><span class="d">${d}</span><div>${its.map((i) => `<div class="slot"><span class="dot" style="background:${esc(kid.color)}"></span><span class="t">${esc(i.start)}–${esc(i.end)}</span><span class="grow small ellipsis">${esc(i.title)}${i.memo ? ` · <span class="muted">${esc(i.memo)}</span>` : ""}</span><button class="link xs" data-act="delItem" data-id="${esc(i.id)}" aria-label="${esc(i.title)} 삭제">삭제</button></div>`).join("") || `<span class="xs muted" style="line-height:32px">-</span>`}</div></div>`; }).join("")}
+    </section>
+    <div class="row between"><button class="link small" data-act="renameChild">이름·색 바꾸기</button><button class="link small" style="color:var(--danger)" data-act="delChild">${esc(kid.label)} 삭제</button></div>
+    <div class="notice">${icon.info}<span>카카오 알림톡 자동 알림은 다음 단계에서 준비 중이에요. 지금은 '문자 복사'로 아이에게 보내 주세요.</span></div>`}`;
+}
+
+/* ---------- 내 정보 ---------- */
+function vMe() {
+  const p = S.profile || {};
+  return `
+    <section class="card">
+      <div class="row between"><h1>${esc(p.nick)}</h1>${S.admin ? '<span class="badge accent">운영자</span>' : ""}</div>
+      <dl class="info"><dt>동네</dt><dd>${esc(p.dong)}</dd><dt>아파트</dt><dd>${esc(p.apt || "-")}</dd><dt>아이 학년대</dt><dd>${esc((p.grades || []).join(", "))}</dd><dt>가입일</dt><dd>${fmtDate(p.createdAt)}</dd><dt>로그인</dt><dd class="small">${esc(S.user?.email || "")} <span class="muted">(다른 회원에게 안 보임)</span></dd></dl>
+      <button class="btn ghost block" data-act="editProfile">프로필 수정</button>
+    </section>
+    <section class="card"><h2>내가 쓴 후기 ${S.data.myReviews.length}</h2>
+      ${S.data.myReviews.map((r) => `<div class="list-item"><div class="grow col" style="gap:2px"><b class="small">${esc(acadName(r.academyId))}</b><span class="small muted ellipsis">${esc(r.summary)}</span></div><span class="row small" style="gap:3px">${icon.heartFill}${keys(r.likes).length}</span><button class="link small" data-act="writeReview" data-id="${esc(r.academyId)}" data-edit="${esc(r.id)}">수정</button></div>`).join("") || `<div class="empty">아직 없어요</div>`}
+    </section>
+    ${S.admin ? `<button class="btn dark block lg" data-act="nav" data-v="admin">관리자 모드</button>` : ""}
+    <div class="col">
+      <button class="btn ghost block" data-act="nav" data-v="privacy">개인정보 처리방침</button>
+      <button class="btn ghost block" data-act="logout">로그아웃</button>
+      <button class="btn danger block" data-act="withdraw">회원 탈퇴</button>
+    </div>`;
+}
+
+/* ---------- 개인정보 처리방침 ---------- */
+function policyHtml() {
+  return `<div class="policy col" style="gap:6px">
+    <h2>학딩 개인정보 처리방침</h2>
+    <p class="xs muted">시행일 ${esc(CONFIG.policyVersion)} · 법률 검토 전 초안</p>
+    <p>학딩은 학부모가 학원 정보를 나누는 데 꼭 필요한 정보만 <b>최소한으로</b> 받고, 받은 정보를 <b>절대 외부에 팔거나 공유하지 않습니다.</b></p>
+    <h3>1. 수집하는 정보</h3>
+    <ul><li>필수: 구글 로그인 식별값(이메일 포함, 로그인에만 사용하며 다른 회원에게 보이지 않음), 닉네임, 사는 동네, 아이 학년대</li><li>선택: 아파트·단지 이름, 라이딩 글(학원·요일·시간·픽업 장소), 학원 스케줄(아이 별칭·학원 시간표), 카카오 오픈채팅 링크</li><li>자동: 방문 횟수 통계(개인을 알아볼 수 없는 합계 숫자)</li><li><b>받지 않는 정보</b>: 아이 이름, 학교, 사진, 생년월일, 전화번호, 집 주소, 실시간 위치</li></ul>
+    <h3>2. 이용 목적</h3>
+    <ul><li>회원 식별, 학원 후기·정보 공유, 라이딩 품앗이 연결, 모임방 안내, 개인 스케줄러 제공</li><li>부정 이용 방지와 신고 처리</li><li>개인을 알아볼 수 없게 합친 통계(예: 동네별 학원 수요)로 서비스 개선</li></ul>
+    <h3>3. 보관 기간과 파기</h3>
+    <ul><li>회원 탈퇴 시 프로필, 후기, 라이딩 글, 스케줄을 즉시 삭제합니다. 학원 정보 수정 이력에는 닉네임 대신 '탈퇴회원'으로 남습니다.</li><li>운영자 백업 파일은 암호화해 보관하며, 백업 목적 외로 열람하지 않습니다.</li></ul>
+    <h3>4. 제3자 제공</h3>
+    <p>학딩은 회원 정보를 제3자에게 제공하지 않습니다. 법령에 따른 요청이 있는 경우만 예외입니다.</p>
+    <h3>5. 처리 위탁 및 국외 이전</h3>
+    <p>서비스 운영을 위해 Google LLC의 Firebase(로그인, 데이터 저장)를 이용합니다. 데이터베이스는 서울 리전에 저장되며, 로그인 처리 과정에서 정보가 미국 등 국외 서버에서 처리될 수 있습니다.</p>
+    <h3>6. 회원의 권리</h3>
+    <p>언제든 '내 정보'에서 프로필을 수정하거나 탈퇴할 수 있습니다. 만 14세 미만은 가입할 수 없습니다.</p>
+    <h3>7. 문의</h3>
+    <p>개인정보 보호 담당: 학딩 운영자 · ${esc(CONFIG.contactEmail)}</p>
+  </div>`;
+}
+const vPrivacy = () => `<button class="link row" style="align-self:flex-start" data-act="back">${icon.back} 뒤로</button><section class="card">${policyHtml()}</section>`;
+
+/* ---------- 관리자 ---------- */
+function vAdmin() {
+  const t = S.ui.adminTab;
+  const tabs = [["stats", "통계"], ["reports", "신고"], ["rooms", "모임방"], ["import", "가져오기"], ["backup", "백업"]];
+  let body = "";
+  if (t === "stats") {
+    const d = S.data;
+    body = `<div class="grid2">${[["회원", d.stats.members || 0], ["학원", d.academies.length], ["후기", d.reviews.length], ["라이딩 글", d.rides.length], ["오늘 방문", d.today], ["누적 방문", d.stats.visits || 0], ["모임방", d.rooms.length], ["숨김 후기", d.reviews.filter((r) => r.hidden).length]].map(([l, n]) => `<div class="stat" style="border:1px solid var(--line)"><b>${Number(n).toLocaleString()}</b><span>${l}</span></div>`).join("")}</div>
+      <section class="card flat"><h3>동네별 라이딩 수요 (집계)</h3>${aggTable()}</section>`;
+  } else if (t === "reports") {
+    body = `<div id="adminReports"><div class="empty">불러오는 중…</div></div>`; setTimeout(loadReports, 0);
+  } else if (t === "rooms") {
+    body = `<button class="btn block" data-act="roomEdit" data-id="">방 추가</button>
+      <section class="card flat"><h3>방 목록</h3>${S.data.rooms.map((r) => `<div class="list-item"><div class="grow"><b class="small">${esc(r.name)}</b><div class="xs muted">${esc(r.type)} · ${esc(r.dong)} · 코드 ${esc(r.code)}</div></div><button class="link" data-act="roomEdit" data-id="${esc(r.id)}">수정</button></div>`).join("") || `<div class="empty">없음</div>`}</section>
+      <section class="card flat"><h3>개설 요청</h3><div id="roomReqs"><div class="empty">불러오는 중…</div></div></section>`;
+    setTimeout(loadRoomReqs, 0);
+  } else if (t === "import") {
+    body = importHtml();
+  } else {
+    body = `
+      <div class="notice warn">${icon.lock}<span>회원·학원·동선 DB를 내 PC로 백업해요. 동선 정보가 들어 있으니 <b>암호를 걸어서</b> 받는 것을 권해요. 암호를 잊으면 열 수 없어요.</span></div>
+      <form class="card flat" data-form="backup">
+        <fieldset><legend>백업할 데이터</legend>
+          <label class="check"><input type="checkbox" name="g" value="members" checked>회원 DB <span class="muted small">(프로필·스케줄)</span></label>
+          <label class="check"><input type="checkbox" name="g" value="academies" checked>학원 DB <span class="muted small">(학원·후기·수정 이력)</span></label>
+          <label class="check"><input type="checkbox" name="g" value="routes" checked>동선 DB <span class="muted small">(라이딩 글)</span></label>
+          <label class="check"><input type="checkbox" name="g" value="etc" checked>기타 <span class="muted small">(모임방·신고·통계·설정)</span></label>
+        </fieldset>
+        <label class="f">백업 암호 <span class="hint">8자 이상. 비우면 암호 없이 저장돼요(권장하지 않음)</span><input class="input" type="password" name="pw" minlength="8" autocomplete="new-password"></label>
+        <button class="btn lg block" type="submit">백업 파일 받기</button>
+      </form>
+      <section class="card flat"><h3>엑셀용 학원 목록</h3><p class="small muted">학원 정보와 평균 별점을 CSV로 받아요 (개인정보 없음).</p><button class="btn ghost block" data-act="exportAcadCsv">학원 CSV 받기</button></section>
+      <section class="card flat"><h3>백업 파일 열기</h3><p class="small muted">암호를 건 백업 파일(.hakding)을 풀어서 JSON으로 저장해요.</p>
+        <form class="col" data-form="decrypt"><input class="input" type="file" name="file" accept=".hakding,.json" required><input class="input" type="password" name="pw" placeholder="백업 암호" required><button class="btn ghost block" type="submit">풀어서 저장</button></form>
+      </section>
+      <p class="xs muted">구글 로그인 이메일 목록은 Firebase 콘솔 › Authentication 에서 관리돼요. 정기 자동 백업은 유료 요금제 전환 후 Firestore 내보내기로 추가할 수 있어요.</p>`;
+  }
+  return `
+    <section class="row between" style="padding:0 2px"><h1>관리자 모드</h1><button class="link" data-act="nav" data-v="me">닫기</button></section>
+    <div class="chips">${tabs.map(([k, l]) => `<button class="chip ${t === k ? "on" : ""}" data-act="adminTab" data-t="${k}">${l}</button>`).join("")}</div>
+    ${body}`;
+}
+function aggTable() {
+  const m = {};
+  S.data.rides.forEach((r) => { const k = `${r.dong}|${acadName(r.academyId)}|${r.time.slice(0, 2)}시`; m[k] = (m[k] || 0) + 1 + keys(r.joins).length; });
+  const rows = Object.entries(m).sort((a, b) => b[1] - a[1]);
+  return rows.length ? `<div class="scroll-x"><table class="table"><thead><tr><th>동네</th><th>학원</th><th>시간대</th><th>가구</th></tr></thead><tbody>${rows.map(([k, n]) => `<tr>${k.split("|").map((x) => `<td>${esc(x)}</td>`).join("")}<td><b>${n}</b></td></tr>`).join("")}</tbody></table></div><p class="xs muted">개인을 알아볼 수 없는 합계예요. 학원 제휴·운송 제휴 영업 자료로 쓸 수 있어요.</p>` : `<div class="empty">데이터 없음</div>`;
+}
+async function loadReports() {
+  const box = $("#adminReports"); if (!box) return;
+  const rs = (await BE.db.list("reports").catch(() => [])).sort((a, b) => b.at - a.at);
+  box.innerHTML = rs.length ? rs.map((r) => `<section class="card flat">
+      <div class="row between"><span class="badge danger">${esc({ review: "후기", wikiLog: "학원 이야기", ride: "라이딩", academy: "학원 정보" }[r.type] || r.type)}</span><span class="xs muted">${fmtDate(r.at)} · ${esc(r.nick)}</span></div>
+      <p class="small"><b>사유:</b> ${esc(r.reason)}</p>
+      <p class="small muted" style="white-space:pre-line">${esc(r.preview || "")}</p>
+      <div class="row wrap">
+        ${r.type === "academy" ? `<button class="btn warn sm" data-act="acadClose" data-id="${esc(r.targetId)}" data-rep="${esc(r.id)}">폐원 처리</button><button class="btn ghost sm" data-act="nav" data-v="academy" data-p="${esc(r.targetId)}">학원 보기</button>` : r.type === "ride" ? `<button class="btn danger sm" data-act="adminDel" data-col="rides" data-id="${esc(r.targetId)}" data-rep="${esc(r.id)}">글 삭제</button>` : `<button class="btn danger sm" data-act="hide" data-col="${r.type === "review" ? "reviews" : "wikiLogs"}" data-id="${esc(r.targetId)}" data-h="1" data-rep="${esc(r.id)}">숨김 처리</button>`}
+        <button class="btn ghost sm" data-act="repDone" data-id="${esc(r.id)}">문제없음(신고 닫기)</button>
+      </div></section>`).join("") : `<div class="empty">들어온 신고가 없어요</div>`;
+}
+async function loadRoomReqs() {
+  const box = $("#roomReqs"); if (!box) return;
+  const rs = await BE.db.list("roomRequests").catch(() => []);
+  box.innerHTML = rs.length ? rs.map((r) => `<div class="list-item"><div class="grow"><b class="small">${esc(r.name)}</b><div class="xs muted">${esc(r.nick)} · ${esc(r.dong)} · ${fmtDate(r.at)}</div></div><button class="link" data-act="reqDone" data-id="${esc(r.id)}">처리 완료</button></div>`).join("") : `<div class="empty">요청 없음</div>`;
+}
+function neisHtml() {
+  const n = S.ui.neis;
+  const key = S.ui.neisKey ?? (LS.get("hakding_neis_key") || S.data.neisKeyServer || "");
+  const office = S.ui.neisOffice || LS.get("hakding_neis_office") || "H10";
+  return `
+    <section class="card flat">
+      <h3>학원 기본정보 API 동기화 (나이스)</h3>
+      <p class="small muted">나이스 교육정보 개방포털의 학원·교습소 정보를 불러와요. <b>이미 있는 학원은 그대로 두고 새 학원만 추가</b>해요. 처음 한 번, 이후엔 원할 때(분기 1회 권장) 눌러 주세요.</p>
+      <form class="col" data-form="neisFetch">
+        <label class="f">나이스 인증키 <span class="hint">open.neis.go.kr 회원가입 › 인증키 신청 (무료). 코드에 저장되지 않고 이 브라우저에만 보관돼요${DEMO ? " · 데모 모드에선 비워 두면 예시 응답으로 동작" : ""}</span><input class="input" type="password" name="key" value="${esc(key)}" autocomplete="off" ${DEMO ? "" : "required"}></label>
+        ${DEMO ? `<label class="check"><input type="checkbox" name="remember" ${LS.get("hakding_neis_key") ? "checked" : ""}>이 브라우저에 인증키 기억하기</label>` : `<label class="check"><input type="checkbox" name="saveServer" ${S.data.neisKeyServer ? "" : "checked"}>Firebase에 저장 <span class="muted small">(관리자만 열람 · 다른 PC에서도 자동 입력)</span></label>`}
+        <div class="grid2">
+          <label class="f">시·도 교육청 *<select class="input" name="office">${OFFICES.map(([c, l]) => `<option value="${c}" ${office === c ? "selected" : ""}>${l}</option>`).join("")}</select></label>
+          <label class="f">구·군 <span class="hint">예: 남구 (비우면 시·도 전체)</span><input class="input" name="zone" maxlength="20" value="${esc(S.ui.neisZone || LS.get("hakding_neis_zone"))}"></label>
+        </div>
+        <label class="f">주소 포함 문구 <span class="hint">학군지 동만 넣으려면 쉼표로 여러 개. 예: 옥동, 신정동</span><input class="input" name="filter" maxlength="80" value="${esc(S.ui.neisFilter || LS.get("hakding_neis_filter"))}"></label>
+        <label class="check"><input type="checkbox" name="kyo" ${S.ui.neisKyo ? "checked" : ""}>교습소(1인 공부방 등)도 포함</label>
+        <button class="btn block" type="submit">불러와서 미리보기</button>
+      </form>
+      <details><summary class="small" style="cursor:pointer;color:var(--brand);font-weight:600">브라우저에서 불러오기가 막힐 때 (파일로 올리기)</summary>
+        <div class="col" style="margin-top:8px">
+          <p class="xs muted">1) 아래 버튼으로 새 탭에서 API 주소를 열고 2) 화면의 글자를 전부 저장(Ctrl+S, .json)한 뒤 3) 여기에 올려 주세요. 1,000곳이 넘으면 2페이지, 3페이지도 받아 함께 올려요.</p>
+          <div class="row wrap">${[1, 2, 3].map((pg) => `<button class="btn ghost sm" type="button" data-act="neisOpen" data-pg="${pg}">${pg}페이지 열기</button>`).join("")}</div>
+          <form class="col" data-form="neisFiles"><input class="input" type="file" name="files" accept=".json,.txt" multiple required><button class="btn ghost block" type="submit">올린 파일로 미리보기</button></form>
+        </div>
+      </details>
+      ${n ? `
+        <div class="card" style="background:var(--bg)">
+          <b>${esc(n.region)} · 불러온 행 ${n.rows.toLocaleString()}개 → 학원 ${n.total.toLocaleString()}곳</b>
+          <div class="grid2">
+            <div class="stat"><b style="color:var(--brand)">${n.add.length.toLocaleString()}</b><span>새로 추가할 학원</span></div>
+            <div class="stat"><b>${n.exist.toLocaleString()}</b><span>이미 있음 (그대로 둠)</span></div>
+            <div class="stat"><b>${n.blocked.toLocaleString()}</b><span>운영자가 삭제·폐원 처리</span></div>
+            <div class="stat"><b>${n.closed.toLocaleString()}</b><span>폐원·휴원 상태라 제외</span></div>
+          </div>
+          ${n.kindSkip || n.filtered ? `<p class="xs muted">교습소 제외 ${n.kindSkip.toLocaleString()}곳 · 주소 문구 불일치 ${n.filtered.toLocaleString()}곳</p>` : ""}
+          ${n.add.length ? `<div class="scroll-x"><table class="table"><thead><tr><th>학원</th><th>동네</th><th>과목</th></tr></thead><tbody>${n.add.slice(0, 15).map((g) => `<tr><td>${esc(g.name)}</td><td>${esc(g.dong || "-")}</td><td>${esc(g.category)}</td></tr>`).join("")}</tbody></table></div>${n.add.length > 15 ? `<p class="xs muted">외 ${(n.add.length - 15).toLocaleString()}곳</p>` : ""}
+            <button class="btn lg block" data-act="neisApply">${n.add.length.toLocaleString()}곳 추가하기</button>` : `<p class="small">새로 추가할 학원이 없어요. 이미 최신 상태예요.</p>`}
+          ${n.add.length > 2000 ? `<div class="notice warn">${icon.info}<span>무료 요금제 하루 쓰기 한도(2만 건)를 고려해 구·군이나 주소 문구로 좁히는 걸 권해요.</span></div>` : ""}
+        </div>` : ""}
+      <div id="syncLogs"><p class="xs muted">동기화 기록 불러오는 중…</p></div>
+    </section>`;
+}
+async function loadSyncLogs() {
+  const box = $("#syncLogs"); if (!box) return;
+  const logs = (await BE.db.list("importLogs").catch(() => [])).sort((a, b) => b.at - a.at).slice(0, 10);
+  if (!$("#syncLogs")) return;
+  $("#syncLogs").innerHTML = logs.length ? `<h3 style="margin-top:6px">동기화 기록</h3><div class="scroll-x"><table class="table"><thead><tr><th>날짜</th><th>지역</th><th>추가</th><th>기존</th><th>실행</th></tr></thead><tbody>${logs.map((l) => `<tr><td>${fmtDate(l.at)}</td><td>${esc(l.region)}</td><td><b>${l.added}</b></td><td>${l.existing}</td><td>${esc(l.nick)}</td></tr>`).join("")}</tbody></table></div><p class="xs muted">마지막 동기화 ${fmtDate(logs[0].at)} · 다음 권장 ${fmtDate(logs[0].at + 91 * 864e5)}</p>` : `<p class="xs muted">아직 동기화한 적이 없어요. 처음 한 번 실행해 주세요.</p>`;
+}
+function importHtml() {
+  const c = S.ui.csv;
+  setTimeout(loadSyncLogs, 0);
+  return neisHtml() + `
+    <section class="card flat">
+      <h3>CSV 파일로 가져오기 (대안)</h3>
+      <p class="small muted">공공데이터포털 '전국학원및교습소표준데이터' CSV를 받아 올리면 학원 기본 정보를 한 번에 채워요. 지역 필터로 우리 시만 골라 주세요.</p>
+      <form class="col" data-form="csvLoad" data-kind="academies">
+        <div class="grid2"><input class="input" type="file" name="file" accept=".csv" required><select class="input" name="enc"><option value="euc-kr">EUC-KR (공공데이터 기본)</option><option value="utf-8">UTF-8</option></select></div>
+        <button class="btn ghost block" type="submit">파일 읽기</button>
+      </form>
+      ${c && c.kind === "academies" ? `<form class="col" data-form="csvImport" data-kind="academies">
+        <p class="small"><b>${c.rows.length.toLocaleString()}</b>행을 읽었어요. 열을 맞춰 주세요.</p>
+        ${[["name", "학원 이름 *"], ["address", "주소"], ["dong", "동네 (없으면 주소에서 추출)"], ["category", "과목·분야"], ["target", "대상"], ["fee", "수강료"]].map(([k, l]) => `<label class="f">${l}<select class="input" name="${k}"><option value="">(사용 안 함)</option>${c.header.map((h, i) => `<option value="${i}" ${guessCol(k, h) ? "selected" : ""}>${esc(h)}</option>`).join("")}</select></label>`).join("")}
+        <label class="f">지역 필터 <span class="hint">주소에 이 글자가 들어간 행만. 예: 울산광역시 남구</span><input class="input" name="filter" maxlength="40"></label>
+        <button class="btn block" type="submit">가져오기</button>
+        <p class="xs muted">같은 이름+주소 학원은 건너뛰어요. 무료 요금제는 하루 쓰기 2만 건 한도라 한 번에 2,000곳 이하를 권해요.</p>
+      </form>` : ""}
+    </section>
+    <section class="card flat">
+      <h3>아파트 목록 가져오기</h3>
+      <p class="small muted">CSV 열: 아파트명, 동네. 가입·모임방 자동완성에 쓰여요. (최대 3,000개)</p>
+      <form class="col" data-form="csvLoad" data-kind="apartments">
+        <div class="grid2"><input class="input" type="file" name="file" accept=".csv" required><select class="input" name="enc"><option value="utf-8">UTF-8</option><option value="euc-kr">EUC-KR</option></select></div>
+        <button class="btn ghost block" type="submit">파일 읽기</button>
+      </form>
+      ${c && c.kind === "apartments" ? `<form class="col" data-form="csvImport" data-kind="apartments">
+        <p class="small"><b>${c.rows.length.toLocaleString()}</b>행</p>
+        ${[["name", "아파트명 *"], ["dong", "동네 *"]].map(([k, l]) => `<label class="f">${l}<select class="input" name="${k}">${c.header.map((h, i) => `<option value="${i}" ${(k === "name" ? /아파트|단지|명/ : /동|읍|면/).test(h) ? "selected" : ""}>${esc(h)}</option>`).join("")}</select></label>`).join("")}
+        <button class="btn block" type="submit">가져오기 (기존 목록 교체)</button>
+      </form>` : ""}
+      <p class="xs muted">현재 ${S.data.apartments.length}개 등록됨</p>
+    </section>`;
+}
+function guessCol(k, h) {
+  const p = { name: /^(학원|교습소)?명$|학원명|학원\/교습소명|교습소명/, address: /도로명주소|도로명|주소/, dong: /행정동|법정동명|^동$/, category: /교습과정|분야|교습계열/, target: /대상/, fee: /수강료|교습비/ }[k];
+  return p ? p.test(h) : false;
+}
+
+/* =====================================================================
+   모달 · 토스트
+   ===================================================================== */
+function modal(html) {
+  $("#layer").innerHTML = `<div class="modal-wrap" data-act="modalBg"><div class="modal" role="dialog" aria-modal="true">${html}<button class="btn ghost block" data-act="closeModal" type="button">닫기</button></div></div>`;
+  const f = $("#layer .modal input, #layer .modal select, #layer .modal textarea"); if (f) setTimeout(() => f.focus(), 30);
+}
+function closeModal() { $("#layer").innerHTML = ""; }
+function ask(msg, okLabel = "확인", danger = false) {
+  return new Promise((res) => {
+    $("#layer").innerHTML = `<div class="modal-wrap"><div class="modal" role="alertdialog" aria-modal="true"><p style="white-space:pre-line">${esc(msg)}</p><div class="grid2"><button class="btn ghost" id="askNo">취소</button><button class="btn ${danger ? "danger" : ""}" id="askYes">${esc(okLabel)}</button></div></div></div>`;
+    $("#askNo").onclick = () => { closeModal(); res(false); };
+    $("#askYes").onclick = () => { closeModal(); res(true); };
+  });
+}
+let toastT;
+function toast(m) { let t = $(".toast"); if (!t) { t = document.createElement("div"); t.className = "toast"; t.setAttribute("role", "status"); document.body.appendChild(t); } t.textContent = m; clearTimeout(toastT); toastT = setTimeout(() => t.remove(), 2600); }
+function fail(e) { console.error(e); toast("저장하지 못했어요. 잠시 후 다시 시도해 주세요." + (e && e.code ? ` (${e.code})` : "")); }
+
+/* ---------- 데모 로그인 / 인앱 브라우저 ---------- */
+function demoLoginPicker() {
+  modal(`<h2>데모 로그인</h2><p class="small muted">실제 서비스에서는 구글 계정 선택 창이 떠요.</p>
+    <button class="btn block lg" data-act="demoAs" data-u="new">새 학부모로 가입해 보기</button>
+    <button class="btn ghost block" data-act="demoAs" data-u="demo_haneul">하늘맘 (기존 회원)</button>
+    <button class="btn ghost block" data-act="demoAs" data-u="demo_admin">운영자 (관리자 모드)</button>`);
+}
+const UA = navigator.userAgent || "";
+const IN_APP = /KAKAOTALK|NAVER\(inapp|DaumApps|daangn|Instagram|FBAN|FBAV|Line\/|; wv\)/i.test(UA);
+function inAppGuide() {
+  if (/KAKAOTALK/i.test(UA)) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); return true; }
+  modal(`<h2>크롬·사파리에서 열어 주세요</h2><p class="small">카카오톡·당근·네이버 앱 안의 브라우저에서는 구글 로그인이 막혀 있어요. 오른쪽 위 메뉴(⋮)에서 <b>'다른 브라우저로 열기'</b>를 눌러 주세요.</p><button class="btn block" data-act="copyUrl">주소 복사하기</button>`);
+  return true;
+}
+
+/* =====================================================================
+   이벤트
+   ===================================================================== */
+const A = {
+  nav: (d) => go(d.v, d.p),
+  addAcad: () => modal(`<form class="col" data-form="newAcad"><h2>학원 추가</h2><p class="small muted">이미 있는 학원인지 검색해 보고 추가해 주세요.</p>${acadFormFields()}<button class="btn lg block" type="submit">등록</button></form>`),
+  back: () => (history.length > 1 ? history.back() : go("home")),
+  login: async () => { if (!DEMO && IN_APP && inAppGuide()) return; try { await BE.auth.login(); } catch (e) { fail(e); } },
+  logout: async () => { await BE.auth.logout(); go("home"); },
+  demoReset: async () => { if (await ask("데모 데이터를 처음 상태로 되돌릴까요?", "초기화")) BE.reset(); },
+  demoAs: async (d) => {
+    closeModal();
+    const u = d.u === "new" ? { uid: "demo_new_" + Math.random().toString(36).slice(2, 7), email: "parent@demo.local", name: "새 학부모" } : d.u === "demo_admin" ? { uid: "demo_admin", email: DEMO_ADMIN_EMAIL } : { uid: d.u, email: d.u + "@demo.local" };
+    await BE.auth.loginAs(u);
+  },
+  copyUrl: async () => { try { await navigator.clipboard.writeText(location.href); toast("주소를 복사했어요"); } catch (e) { toast(location.href); } },
+  closeModal, modalBg: (d, el, e) => { if (e.target === el) closeModal(); },
+  policyModal: () => modal(policyHtml()),
+  agreeAll: (d, el) => document.querySelectorAll(".agree").forEach((c) => (c.checked = el.checked)),
+  cat: (d) => { S.ui.cat = d.c; render(); },
+  rank: (d) => { S.ui.rankMode = d.m; render(); },
+  acadTab: (d) => { S.ui.acadTab = d.t; render(); },
+  adminTab: (d) => { S.ui.adminTab = d.t; render(); },
+  gateMode: (d) => { S.ui.gateMode = d.m; render(); },
+  child: (d) => { S.ui.child = Number(d.i); render(); },
+  writeReview: (d) => {
+    S.ui.editReview = d.edit || null;
+    if (!passed() && !S.admin && !d.edit) { S.ui.reviewFor = d.id; go("gate"); return; }
+    go("review", d.id);
+  },
+  editAcad: (d) => {
+    const a = S.data.academies.find((x) => x.id === d.id);
+    modal(`<form class="col" data-form="editAcad" data-id="${esc(a.id)}"><h2>${esc(a.name)} 정보 수정</h2><p class="small muted">수정 내용은 이력에 닉네임과 함께 남아요.</p>${acadFormFields(a)}<button class="btn lg block" type="submit">저장</button></form>`);
+  },
+  addStory: (d) => modal(`<form class="col" data-form="story" data-id="${esc(d.id)}"><h2>학원 이야기 보태기</h2><p class="small muted">언제 생겼는지, 어떻게 변해왔는지, 어떤 선생님·반이 유명한지 등 아는 사실을 남겨 주세요.</p><textarea class="input" name="text" required minlength="10" maxlength="800"></textarea><button class="btn lg block" type="submit">남기기</button></form>`),
+  like: async (d) => {
+    const r = S.data.reviews.find((x) => x.id === d.id); if (!r || r.uid === S.user.uid) return;
+    const on = !!r.likes?.[S.user.uid];
+    try { await BE.db.setKey("reviews", r.id, "likes", S.user.uid, on ? null : now()); r.likes = r.likes || {}; if (on) delete r.likes[S.user.uid]; else r.likes[S.user.uid] = now(); render(); } catch (e) { fail(e); }
+  },
+  delReview: async (d) => {
+    if (S.profile.firstReviewId === d.id && !S.admin) { const mine = S.data.myReviews.filter((r) => r.id !== d.id); if (!mine.length) { toast("첫 평가는 이용 조건이라 삭제할 수 없어요. 수정은 가능해요."); return; } }
+    if (!(await ask("이 후기를 삭제할까요?", "삭제", true))) return;
+    try { await BE.db.del("reviews", d.id); if (S.profile.firstReviewId === d.id) { const alt = S.data.myReviews.find((r) => r.id !== d.id); await BE.db.update("users", S.user.uid, { firstReviewId: alt ? alt.id : "" }); S.profile.firstReviewId = alt ? alt.id : ""; } toast("삭제했어요"); refresh(); } catch (e) { fail(e); }
+  },
+  report: (d) => modal(`<form class="col" data-form="report" data-type="${esc(d.type)}" data-id="${esc(d.id)}"><h2>${d.type === "academy" ? "학원 정보 신고" : "신고하기"}</h2><fieldset><legend>사유</legend>${(d.type === "academy" ? ["폐원·없어진 학원", "다른 곳으로 이전", "정보가 틀려요", "중복 등록", "기타"] : ["허위 사실", "특정인 비방·욕설", "광고·홍보", "개인정보 노출", "유상 라이딩", "기타"]).map((r, i) => `<label class="check"><input type="radio" name="reason" value="${r}" ${i === 0 ? "checked" : ""}>${r}</label>`).join("")}</fieldset><button class="btn lg block" type="submit">신고</button></form>`),
+  hide: async (d) => {
+    try {
+      await BE.db.update(d.col, d.id, { hidden: d.h === "1" });
+      if (d.rep) await BE.db.del("reports", d.rep);
+      toast(d.h === "1" ? "숨김 처리했어요" : "복구했어요"); await refresh(); if (S.ui.adminTab === "reports") loadReports();
+    } catch (e) { fail(e); }
+  },
+  adminDel: async (d) => { if (!(await ask("이 글을 삭제할까요?", "삭제", true))) return; try { await BE.db.del(d.col, d.id); if (d.rep) await BE.db.del("reports", d.rep); toast("삭제했어요"); await refresh(); } catch (e) { fail(e); } },
+  repDone: async (d) => { try { await BE.db.del("reports", d.id); loadReports(); } catch (e) { fail(e); } },
+  reqDone: async (d) => { try { await BE.db.del("roomRequests", d.id); loadRoomReqs(); } catch (e) { fail(e); } },
+  rideForm: () => rideFormModal(),
+  join: async (d) => {
+    const r = S.data.rides.find((x) => x.id === d.id); const on = !!r.joins?.[S.user.uid];
+    try { await BE.db.setKey("rides", r.id, "joins", S.user.uid, on ? null : S.profile.nick); r.joins = r.joins || {}; if (on) delete r.joins[S.user.uid]; else r.joins[S.user.uid] = S.profile.nick; toast(on ? "신청을 취소했어요" : "신청했어요. 모임방이나 오픈채팅에서 인사해 주세요"); render(); } catch (e) { fail(e); }
+  },
+  trouble: (d) => modal(`<form class="col" data-form="trouble" data-id="${esc(d.id)}"><h2>갑자기 힘들어요</h2><p class="small muted">함께 타는 분들 화면과 홈에 바로 표시돼요. 모임방에도 한 번 알려 주세요.</p><fieldset><legend>날짜</legend><label class="check"><input type="radio" name="when" value="0" checked>오늘 (${md(isoDay(0))})</label><label class="check"><input type="radio" name="when" value="1">내일 (${md(isoDay(1))})</label><label class="check"><input type="radio" name="when" value="d">날짜 선택 <input class="input" type="date" name="date" style="max-width:180px;min-height:40px" min="${isoDay(0)}"></label></fieldset><button class="btn warn lg block" type="submit">알리기</button></form>`),
+  troubleClear: async (d) => { try { await BE.db.update("rides", d.id, { trouble: [] }); toast("알림을 해제했어요"); refresh(); } catch (e) { fail(e); } },
+  delRide: async (d) => { if (!(await ask("이 라이딩 글을 삭제할까요?", "삭제", true))) return; try { await BE.db.del("rides", d.id); refresh(); } catch (e) { fail(e); } },
+  showCode: (d) => { S.ui["show_" + d.id] = true; track("room_code_view"); render(); },
+  roomEdit: (d) => {
+    const r = S.data.rooms.find((x) => x.id === d.id) || {};
+    modal(`<form class="col" data-form="room" data-id="${esc(r.id || "")}"><h2>${r.id ? "방 수정" : "방 추가"}</h2>
+      <label class="f">방 이름 *<input class="input" name="name" required maxlength="30" value="${esc(r.name || "")}"></label>
+      <label class="f">종류<select class="input" name="type">${["동네", "아파트", "학원가", "학원별", "기타"].map((t) => `<option ${r.type === t ? "selected" : ""}>${t}</option>`).join("")}</select></label>
+      <label class="f">동네 *<input class="input" name="dong" required maxlength="20" value="${esc(r.dong || "")}" list="dongs3"></label><datalist id="dongs3">${dongList().map((x) => `<option value="${esc(x)}">`).join("")}</datalist>
+      <label class="f">설명<input class="input" name="desc" maxlength="60" value="${esc(r.desc || "")}"></label>
+      <label class="f">오픈채팅 링크 * <span class="hint">https://open.kakao.com/ 로 시작</span><input class="input" name="link" required maxlength="120" value="${esc(r.link || "")}"></label>
+      <label class="f">참여코드 * <span class="hint">오픈채팅방 설정의 참여코드와 같게</span><input class="input" name="code" required maxlength="12" value="${esc(r.code || "")}"></label>
+      <label class="f">정렬 순서<input class="input" type="number" name="order" value="${esc(r.order || S.data.rooms.length + 1)}"></label>
+      <button class="btn lg block" type="submit">저장</button>
+      ${r.id ? `<button class="btn danger block" type="button" data-act="roomDel" data-id="${esc(r.id)}">방 삭제</button>` : ""}
+    </form>`);
+  },
+  roomDel: async (d) => { if (!(await ask("이 방을 삭제할까요?", "삭제", true))) return; try { await BE.db.del("rooms", d.id); closeModal(); refresh(); } catch (e) { fail(e); } },
+  addChild: () => modal(`<form class="col" data-form="child"><h2>아이 추가</h2><label class="f">별칭 * <span class="hint">이름 대신 '첫째', '둘째', '막내' 등</span><input class="input" name="label" required maxlength="10" value="${["첫째", "둘째", "셋째", "막내"][(S.data.schedule?.children || []).length] || ""}"></label><fieldset><legend>색</legend><div class="row wrap">${COLORS.map((c, i) => `<label class="check"><input type="radio" name="color" value="${c}" ${i === 0 ? "checked" : ""}><span class="dot" style="width:22px;height:22px;border-radius:11px;background:${c}"></span></label>`).join("")}</div></fieldset><button class="btn lg block" type="submit">추가</button></form>`),
+  renameChild: () => { const k = S.data.schedule.children[S.ui.child]; modal(`<form class="col" data-form="child" data-i="${S.ui.child}"><h2>이름·색 바꾸기</h2><label class="f">별칭<input class="input" name="label" required maxlength="10" value="${esc(k.label)}"></label><fieldset><legend>색</legend><div class="row wrap">${COLORS.map((c) => `<label class="check"><input type="radio" name="color" value="${c}" ${k.color === c ? "checked" : ""}><span class="dot" style="width:22px;height:22px;border-radius:11px;background:${c}"></span></label>`).join("")}</div></fieldset><button class="btn lg block" type="submit">저장</button></form>`); },
+  delChild: async () => { const sc = S.data.schedule; const k = sc.children[S.ui.child]; if (!(await ask(`${k.label}의 일정을 모두 삭제할까요?`, "삭제", true))) return; sc.children.splice(S.ui.child, 1); S.ui.child = 0; await saveSchedule(); },
+  addItem: () => {
+    const acs = S.data.academies.map((a) => a.name);
+    modal(`<form class="col" data-form="item"><h2>일정 추가</h2>
+      <label class="f">학원·활동 *<input class="input" name="title" required maxlength="30" list="acadNames" placeholder="예: 한빛수학학원"></label><datalist id="acadNames">${acs.map((n) => `<option value="${esc(n)}">`).join("")}</datalist>
+      <fieldset><legend>요일 *</legend><div class="grid3" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${DAYS.map((d) => `<label class="check" style="flex-direction:column;align-items:center;gap:2px;padding:0"><input type="checkbox" name="days" value="${d}">${d}</label>`).join("")}</div></fieldset>
+      <div class="grid2"><label class="f">시작 *<input class="input" type="time" name="start" required value="16:00" step="300"></label><label class="f">끝 *<input class="input" type="time" name="end" required value="17:00" step="300"></label></div>
+      <label class="f">준비물·메모<input class="input" name="memo" maxlength="40" placeholder="예: 숙제 노트, 체육복"></label>
+      <button class="btn lg block" type="submit">추가</button></form>`);
+  },
+  delItem: async (d) => { const k = S.data.schedule.children[S.ui.child]; k.items = k.items.filter((i) => i.id !== d.id); await saveSchedule(); },
+  copyToday: async () => {
+    const k = S.data.schedule.children[S.ui.child]; const td = todayDay();
+    const its = k.items.filter((i) => i.days.includes(td)).sort((a, b) => a.start.localeCompare(b.start));
+    const txt = `[학딩] 오늘(${td}) 일정\n` + (its.length ? its.map((i) => `· ${i.start} ${i.title}${i.memo ? ` (${i.memo})` : ""}`).join("\n") : "오늘은 학원이 없어요") + "\n늦지 않게 출발하자!";
+    try { await navigator.clipboard.writeText(txt); toast("복사했어요. 카톡에 붙여넣어 보내 주세요"); } catch (e) { modal(`<h2>복사해서 보내 주세요</h2><textarea class="input" rows="6">${esc(txt)}</textarea>`); }
+  },
+  editProfile: () => { const p = S.profile; modal(`<form class="col" data-form="profile"><h2>프로필 수정</h2><label class="f">닉네임<input class="input" name="nick" required maxlength="12" minlength="2" value="${esc(p.nick)}"></label><label class="f">동네<input class="input" name="dong" required maxlength="20" value="${esc(p.dong)}"></label><label class="f">아파트·단지<input class="input" name="apt" maxlength="30" value="${esc(p.apt || "")}"></label><fieldset><legend>아이 학년대</legend><div class="chips wrap">${GRADES.map((g) => `<label class="check" style="padding:2px 8px 2px 0"><input type="checkbox" name="grades" value="${g}" ${(p.grades || []).includes(g) ? "checked" : ""}>${g}</label>`).join("")}</div></fieldset><button class="btn lg block" type="submit">저장</button></form>`); },
+  withdraw: async () => {
+    if (!(await ask("탈퇴하면 프로필, 내 후기, 라이딩 글, 스케줄이 즉시 삭제돼요.\n되돌릴 수 없어요. 탈퇴할까요?", "탈퇴", true))) return;
+    try {
+      const uid = S.user.uid;
+      const [rv, rd, wl] = await Promise.all([BE.db.list("reviews", ["uid", "==", uid]), BE.db.list("rides", ["uid", "==", uid]).catch(() => []), BE.db.list("wikiLogs", ["uid", "==", uid]).catch(() => [])]);
+      for (const r of rd) { await BE.db.del("rides", r.id); }
+      for (const w of wl) { await BE.db.update("wikiLogs", w.id, { nick: "탈퇴회원" }); }
+      await BE.db.update("users", uid, { firstReviewId: "", firstLogId: "" });
+      for (const r of rv) { await BE.db.del("reviews", r.id); }
+      await BE.db.del("schedules", uid).catch(() => {});
+      await BE.db.del("users", uid);
+      try { await BE.auth.deleteAccount(); } catch (e) { await BE.auth.logout(); }
+      toast("탈퇴가 완료됐어요. 그동안 고마웠어요."); go("home");
+    } catch (e) { fail(e); }
+  },
+  neisOpen: (d) => {
+    const key = (document.querySelector('[data-form=neisFetch] [name=key]') || {}).value || "";
+    const office = (document.querySelector('[data-form=neisFetch] [name=office]') || {}).value || "H10";
+    const zone = (document.querySelector('[data-form=neisFetch] [name=zone]') || {}).value || "";
+    if (!key) { toast("인증키를 먼저 입력해 주세요"); return; }
+    window.open(neisUrl(key, office, zone, Number(d.pg)), "_blank", "noopener");
+  },
+  neisApply: async () => {
+    const n = S.ui.neis; if (!n || !n.add.length) return;
+    if (!(await ask(`새 학원 ${n.add.length.toLocaleString()}곳을 추가할까요?\n이미 있는 학원은 건드리지 않아요.`, "추가하기"))) return;
+    let done = 0, failed = 0;
+    for (const g of n.add) {
+      try {
+        await BE.db.set("academies", "neis_" + g.sourceId, { name: g.name, category: g.category, dong: g.dong, address: g.address, phone: g.phone || "", target: "", shuttle: "모름", hours: "", fee: "", feeOfficial: clip(g.fee, 300), courses: clip(g.courses, 120), kind: clip(g.kind, 10), source: "neis", sourceId: g.sourceId, createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: "공공데이터(나이스)", hidden: false });
+        done++;
+      } catch (e) { failed++; console.warn(e); }
+      if (done % 50 === 0) toast(`${done.toLocaleString()} / ${n.add.length.toLocaleString()} 추가 중…`);
+    }
+    await BE.db.add("importLogs", { at: now(), uid: S.user.uid, nick: S.profile?.nick || "운영자", region: n.region, rows: n.rows, total: n.total, added: done, failed, existing: n.exist, blocked: n.blocked, closedSkipped: n.closed }).catch((e) => console.warn(e));
+    S.ui.neis = null; toast(`${done.toLocaleString()}곳을 추가했어요${failed ? ` (실패 ${failed})` : ""}`); await refresh();
+  },
+  acadClose: async (d) => {
+    if (!(await ask("이 학원을 폐원 처리할까요?\n회원에게 숨겨지고, 후기는 보존돼요. 다음 동기화 때 다시 들어오지 않아요.", "폐원 처리"))) return;
+    try { await BE.db.update("academies", d.id, { hidden: true, closed: true, closedAt: now() }); if (d.rep) await BE.db.del("reports", d.rep); toast("폐원 처리했어요"); await refresh(); if (S.ui.adminTab === "reports" && S.view === "admin") loadReports(); } catch (e) { fail(e); }
+  },
+  acadRestore: async (d) => { try { await BE.db.update("academies", d.id, { hidden: false, closed: false }); toast("복구했어요"); await refresh(); } catch (e) { fail(e); } },
+  acadDelete: async (d) => {
+    const a = S.data.academies.find((x) => x.id === d.id); if (!a) return;
+    const cnt = S.data.reviews.filter((r) => r.academyId === a.id).length;
+    if (!(await ask(`'${a.name}'을(를) 완전히 삭제할까요?${cnt ? `\n이 학원 후기 ${cnt}개도 함께 삭제돼요.` : ""}\n되돌릴 수 없어요. 보통은 '폐원 처리'를 권해요.`, "완전 삭제", true))) return;
+    try {
+      for (const r of S.data.reviews.filter((r) => r.academyId === a.id)) await BE.db.del("reviews", r.id);
+      const blk = (await BE.db.get("config", "importBlock").catch(() => null)) || {};
+      const ids = [...new Set([...(blk.ids || []), a.sourceId || "", "name:" + normName(a.name) + "|" + (a.dong || "")].filter(Boolean))];
+      await BE.db.set("config", "importBlock", { ids, updatedAt: now() });
+      await BE.db.del("academies", a.id);
+      toast("삭제했어요. 다음 동기화 때 다시 들어오지 않아요"); await refresh(); go("academies");
+    } catch (e) { fail(e); }
+  },
+  exportAcadCsv: () => {
+    const rows = [["학원명", "과목", "동네", "주소", "대상", "셔틀", "수업시간", "수강료", "후기수", ...ITEMS.map(([, l]) => l), "종합"]];
+    S.data.academies.forEach((a) => { const g = aggFor(a.id); rows.push([a.name, a.category, a.dong, a.address, a.target, a.shuttle, a.hours, a.fee, g.count, ...ITEMS.map(([k]) => (g.count ? r1(g.per[k]) : "")), g.count ? r1(g.overall) : ""]); });
+    download("﻿" + rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n"), `학딩_학원목록_${ymd()}.csv`, "text/csv;charset=utf-8");
+  }
+};
+async function saveSchedule() { try { await BE.db.set("schedules", S.user.uid, { children: S.data.schedule.children, updatedAt: now() }); closeModal(); render(); } catch (e) { fail(e); } }
+
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const f = A[el.dataset.act]; if (!f) return;
+  if (el.dataset.act === "modalBg" && e.target !== el) return;
+  if (el.tagName === "A") return;
+  if (el.type !== "checkbox") e.preventDefault();
+  f(el.dataset, el, e);
+});
+document.addEventListener("input", (e) => {
+  const k = e.target.dataset.input; if (!k) return;
+  if (k === "search") { S.ui.q = e.target.value.trim(); const box = $("#acadList"); if (box) box.innerHTML = acadListHtml(); }
+});
+document.addEventListener("change", (e) => {
+  const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad"].includes(k)) return;
+  if (k === "dong") S.ui.dong = e.target.value;
+  if (k === "sort") S.ui.sort = e.target.value;
+  if (k === "rideAcad") S.ui.rideAcad = e.target.value;
+  render();
+});
+
+/* ---------- 폼 제출 ---------- */
+document.addEventListener("submit", async (e) => {
+  const form = e.target.closest("[data-form]"); if (!form) return;
+  e.preventDefault();
+  const fd = new FormData(form); const v = (k) => clip(fd.get(k), 2000);
+  const btn = form.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
+  try { await (F[form.dataset.form] || (() => {}))(form, fd, v); }
+  catch (err) { fail(err); }
+  finally { if (btn && document.body.contains(btn)) btn.disabled = false; }
+});
+const F = {
+  async homeSearch(form, fd) { S.ui.q = clip(fd.get("q"), 40); go("academies"); },
+  async onboard(form, fd, v) {
+    const grades = fd.getAll("grades"); if (!grades.length) { toast("아이 학년대를 하나 이상 골라 주세요"); return; }
+    const p = { nick: clip(v("nick"), 12), dong: clip(v("dong"), 20), apt: clip(v("apt"), 30), grades, agreedAt: now(), policyVersion: CONFIG.policyVersion, createdAt: now(), firstReviewId: "", firstLogId: "" };
+    await BE.db.set("users", S.user.uid, p);
+    S.profile = p; await BE.db.inc("stats", "global", "members").catch(() => {}); track("sign_up", { method: "google" });
+    toast("환영해요! 이제 두 가지만 남겨 주세요"); await refresh(); go("gate");
+  },
+  async newAcad(form, fd, v) {
+    const name = clip(v("name"), 40);
+    if (S.data.academies.some((a) => a.name.replace(/\s/g, "") === name.replace(/\s/g, "") && a.dong === v("dong"))) { toast("이미 등록된 학원이에요. '기존 학원에 정보 보태기'를 이용해 주세요"); return; }
+    const a = { name, category: v("category"), dong: clip(v("dong"), 20), address: clip(v("address"), 80), target: clip(v("target"), 30), shuttle: v("shuttle"), hours: clip(v("hours"), 60), fee: clip(v("fee"), 60), createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: S.profile.nick, hidden: false };
+    const id = await BE.db.add("academies", a);
+    const lid = await BE.db.add("wikiLogs", { academyId: id, uid: S.user.uid, nick: S.profile.nick, type: "create", text: "학원 등록", at: now(), hidden: false });
+    await markLog(lid); toast("학원을 등록했어요"); S.ui.reviewFor = id; await refresh();
+    if (S.view === "gate") render(); else { closeModal(); go("academy", id); }
+  },
+  async gateStory(form, fd, v) {
+    const aid = v("academyId"); if (!aid) return;
+    const lid = await BE.db.add("wikiLogs", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, type: "story", text: clip(v("text"), 800), at: now(), hidden: false });
+    await markLog(lid); S.ui.reviewFor = aid; toast("고마워요! 이제 평가 하나만 남았어요"); await refresh();
+  },
+  async editAcad(form, fd, v) {
+    const a = S.data.academies.find((x) => x.id === form.dataset.id);
+    const fields = { category: "과목", dong: "동네", address: "주소", phone: "전화", target: "대상", shuttle: "셔틀", hours: "수업 시간", fee: "수강료" };
+    const patch = {}; const changes = [];
+    Object.entries(fields).forEach(([k, l]) => { const nv = clip(v(k), 80); if ((a[k] || "") !== nv) { patch[k] = nv; changes.push(`${l}: ${a[k] || "(없음)"} → ${nv || "(없음)"}`); } });
+    if (!changes.length) { closeModal(); return; }
+    patch.updatedAt = now(); patch.updatedNick = S.profile.nick;
+    await BE.db.update("academies", a.id, patch);
+    const lid = await BE.db.add("wikiLogs", { academyId: a.id, uid: S.user.uid, nick: S.profile.nick, type: "edit", text: changes.join("\n"), at: now(), hidden: false });
+    if (!S.profile.firstLogId) await markLog(lid);
+    closeModal(); toast("수정했어요. 이력에 남았어요"); refresh();
+  },
+  async story(form, fd, v) {
+    const lid = await BE.db.add("wikiLogs", { academyId: form.dataset.id, uid: S.user.uid, nick: S.profile.nick, type: "story", text: clip(v("text"), 800), at: now(), hidden: false });
+    if (!S.profile.firstLogId) await markLog(lid);
+    closeModal(); S.ui.acadTab = "story"; toast("이야기를 남겼어요"); render();
+  },
+  async review(form, fd, v) {
+    const editId = form.dataset.edit;
+    const scores = Object.fromEntries(ITEMS.map(([k]) => [k, Number(fd.get(k))]));
+    if (Object.values(scores).some((n) => !(n >= 1 && n <= 5))) { toast("5개 항목 점수를 모두 골라 주세요"); return; }
+    const body = { scores, summary: clip(v("summary"), 60), body: clip(v("body"), 1500), childGrade: v("childGrade"), period: v("period"), goal: clip(v("goal"), 40), current: fd.get("current") === "on", updatedAt: now() };
+    if (editId) { await BE.db.update("reviews", editId, body); toast("후기를 수정했어요"); await refresh(); history.back(); return; }
+    const aid = v("academyId"); if (!aid) { toast("학원을 골라 주세요"); return; }
+    if (S.data.myReviews.some((r) => r.academyId === aid)) { toast("이 학원은 이미 평가했어요. 내 후기를 수정해 주세요"); return; }
+    const id = await BE.db.add("reviews", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, createdAt: now(), ...body });
+    if (!S.profile.firstReviewId) { await BE.db.update("users", S.user.uid, { firstReviewId: id }); S.profile.firstReviewId = id; }
+    toast(form.dataset.gate === "1" ? "모든 기능이 열렸어요!" : "평가를 등록했어요");
+    track(form.dataset.gate === "1" ? "gate_complete" : "review_create");
+    await refresh(); go("academy", aid);
+  },
+  async report(form, fd) {
+    const t = form.dataset.type, id = form.dataset.id;
+    let preview = "";
+    if (t === "review") { const r = S.data.reviews.find((x) => x.id === id); preview = r ? `${r.nick}: ${r.summary}\n${r.body || ""}` : ""; }
+    if (t === "ride") { const r = S.data.rides.find((x) => x.id === id); preview = r ? `${r.nick}: ${acadName(r.academyId)} ${r.pickup} ${r.note || ""}` : ""; }
+    if (t === "academy") { const a = S.data.academies.find((x) => x.id === id); preview = a ? `${a.name} · ${a.address || a.dong || ""}` : ""; }
+    await BE.db.add("reports", { type: t, targetId: id, reason: fd.get("reason"), preview: clip(preview, 300), uid: S.user.uid, nick: S.profile.nick, at: now() });
+    closeModal(); toast("신고가 접수됐어요. 운영자가 확인할게요");
+  },
+  async ride(form, fd, v) {
+    const days = fd.getAll("days"); if (!days.length) { toast("요일을 골라 주세요"); return; }
+    const link = v("link"); if (link && !safeLink(link)) { toast("오픈채팅 링크는 https://open.kakao.com/ 으로 시작해야 해요"); return; }
+    await BE.db.add("rides", { type: fd.get("type") === "need" ? "need" : "offer", uid: S.user.uid, nick: S.profile.nick, academyId: v("academyId"), days, time: v("time"), pickup: clip(v("pickup"), 40), dong: S.profile.dong, seats: Math.max(1, Math.min(6, Number(v("seats")) || 1)), note: clip(v("note"), 80), link: safeLink(link), joins: {}, trouble: [], createdAt: now() });
+    closeModal(); toast("올렸어요"); refresh();
+  },
+  async trouble(form, fd) {
+    const w = fd.get("when"); const d = w === "d" ? fd.get("date") : isoDay(Number(w));
+    if (!d) { toast("날짜를 골라 주세요"); return; }
+    const r = S.data.rides.find((x) => x.id === form.dataset.id);
+    const list = [...new Set([...(r.trouble || []).filter((x) => x >= isoDay(0)), d])].sort();
+    await BE.db.update("rides", r.id, { trouble: list });
+    closeModal(); toast("함께하는 분들에게 표시됐어요. 모임방에도 알려 주세요"); refresh();
+  },
+  async roomReq(form, fd, v) { await BE.db.add("roomRequests", { name: clip(v("name"), 30), dong: S.profile.dong, uid: S.user.uid, nick: S.profile.nick, at: now() }); toast("요청했어요. 운영자가 방을 만들면 이곳에 보여요"); },
+  async room(form, fd, v) {
+    const link = safeLink(v("link")); if (!link) { toast("오픈채팅 링크는 https://open.kakao.com/ 으로 시작해야 해요"); return; }
+    const r = { name: clip(v("name"), 30), type: v("type"), dong: clip(v("dong"), 20), desc: clip(v("desc"), 60), link, code: clip(v("code"), 12), order: Number(v("order")) || 0 };
+    if (form.dataset.id) await BE.db.update("rooms", form.dataset.id, r); else await BE.db.add("rooms", r);
+    closeModal(); toast("저장했어요"); refresh();
+  },
+  async child(form, fd, v) {
+    const sc = S.data.schedule || (S.data.schedule = { children: [] }); sc.children = sc.children || [];
+    if (form.dataset.i !== undefined) { const k = sc.children[Number(form.dataset.i)]; k.label = clip(v("label"), 10); k.color = COLORS.includes(fd.get("color")) ? fd.get("color") : k.color; }
+    else { sc.children.push({ id: "c" + now().toString(36), label: clip(v("label"), 10), color: COLORS.includes(fd.get("color")) ? fd.get("color") : COLORS[0], items: [] }); S.ui.child = sc.children.length - 1; }
+    await saveSchedule();
+  },
+  async item(form, fd, v) {
+    const days = fd.getAll("days"); if (!days.length) { toast("요일을 골라 주세요"); return; }
+    if (v("end") <= v("start")) { toast("끝나는 시간이 시작보다 늦어야 해요"); return; }
+    S.data.schedule.children[S.ui.child].items.push({ id: "i" + now().toString(36), days, start: v("start"), end: v("end"), title: clip(v("title"), 30), memo: clip(v("memo"), 40) });
+    await saveSchedule();
+  },
+  async profile(form, fd, v) {
+    const grades = fd.getAll("grades"); if (!grades.length) { toast("아이 학년대를 하나 이상 골라 주세요"); return; }
+    const p = { nick: clip(v("nick"), 12), dong: clip(v("dong"), 20), apt: clip(v("apt"), 30), grades };
+    await BE.db.update("users", S.user.uid, p); Object.assign(S.profile, p); closeModal(); toast("저장했어요"); render();
+  },
+  async backup(form, fd, v) {
+    const groups = fd.getAll("g"); if (!groups.length) { toast("백업할 데이터를 골라 주세요"); return; }
+    const pw = fd.get("pw") || "";
+    if (!pw && !(await ask("암호 없이 저장하면 파일을 가진 누구나 회원·동선 정보를 볼 수 있어요. 계속할까요?", "암호 없이 저장", true))) return;
+    toast("데이터를 모으는 중…");
+    const cols = { members: ["users", "schedules"], academies: ["academies", "reviews", "wikiLogs"], routes: ["rides"], etc: ["rooms", "reports", "roomRequests", "stats", "config"] };
+    const out = { app: "hakding", exportedAt: new Date().toISOString(), groups, data: {} };
+    for (const g of groups) for (const c of cols[g]) { out.data[c] = await BE.db.list(c); }
+    const json = JSON.stringify(out, null, 1);
+    if (pw) { const enc = await encryptText(json, pw); download(JSON.stringify(enc), `학딩_백업_${ymd()}.hakding`, "application/octet-stream"); }
+    else download(json, `학딩_백업_${ymd()}.json`, "application/json");
+    toast("백업 파일을 저장했어요");
+  },
+  async decrypt(form, fd) {
+    const file = fd.get("file"); const txt = await file.text();
+    try { const plain = await decryptText(JSON.parse(txt), fd.get("pw")); download(plain, file.name.replace(/\.hakding$/, "") + "_열람용.json", "application/json"); toast("풀어서 저장했어요. 다 보면 삭제해 주세요"); }
+    catch (e) { toast("암호가 틀렸거나 학딩 백업 파일이 아니에요"); }
+  },
+  async neisFetch(form, fd) {
+    const key = String(fd.get("key") || "").trim(), office = fd.get("office"), zone = clip(fd.get("zone"), 20), filter = clip(fd.get("filter"), 80), kyo = fd.get("kyo") === "on";
+    S.ui.neis = null; render();
+    S.ui.neisKey = key; S.ui.neisOffice = office; S.ui.neisZone = zone; S.ui.neisFilter = filter; S.ui.neisKyo = kyo;
+    if (DEMO) LS.set("hakding_neis_key", fd.get("remember") === "on" ? key : "");
+    else if (fd.get("saveServer") === "on" && key && key !== S.data.neisKeyServer) { try { await BE.db.set("adminSecrets", "neis", { key, updatedAt: now() }); S.data.neisKeyServer = key; } catch (e) { console.warn(e); } } LS.set("hakding_neis_office", office); LS.set("hakding_neis_zone", zone); LS.set("hakding_neis_filter", filter);
+    let rows;
+    if (!key && DEMO) { rows = neisMock(); toast("데모: 예시 응답으로 미리보기해요"); }
+    else {
+      toast("나이스에서 불러오는 중…");
+      try { rows = await neisFetchAll(key, office, zone, (got, total) => toast(`불러오는 중… ${got.toLocaleString()} / ${total.toLocaleString()}행`)); }
+      catch (e) {
+        if (e.message === "BLOCKED") { modal(`<h2>브라우저에서 바로 불러오지 못했어요</h2><p class="small">나이스 서버가 다른 사이트에서의 직접 호출을 막고 있을 수 있어요. 가져오기 화면의 <b>'브라우저에서 불러오기가 막힐 때 (파일로 올리기)'</b>를 열어 1페이지부터 받아서 올려 주세요. 결과는 똑같아요.</p>`); return; }
+        toast("나이스 응답 오류: " + e.message); return;
+      }
+    }
+    neisAnalyze(rows, `${(OFFICES.find((o) => o[0] === office) || [, office])[1]}${zone ? " " + zone : ""}${filter ? " (" + filter + ")" : ""}`, filter, kyo);
+  },
+  async neisFiles(form, fd) {
+    S.ui.neis = null;
+    const rows = [];
+    for (const f of fd.getAll("files")) {
+      try { const j = JSON.parse(await f.text()); rows.push(...neisRowsFromJson(j)); }
+      catch (e) { toast(`${f.name}: 나이스 응답 파일이 아니에요`); return; }
+    }
+    const filter = clip(S.ui.neisFilter || LS.get("hakding_neis_filter"), 80);
+    neisAnalyze(rows, "파일 업로드" + (filter ? " (" + filter + ")" : ""), filter, !!S.ui.neisKyo);
+  },
+  async csvLoad(form, fd) {
+    const file = fd.get("file"); const buf = await file.arrayBuffer();
+    let text; try { text = new TextDecoder(fd.get("enc")).decode(buf); } catch (e) { text = new TextDecoder("utf-8").decode(buf); }
+    const rows = parseCSV(text.replace(/^﻿/, "")).filter((r) => r.some((c) => c.trim()));
+    if (rows.length < 2) { toast("행이 없어요. 인코딩을 바꿔 보세요"); return; }
+    S.ui.csv = { kind: form.dataset.kind, header: rows[0].map((h) => h.trim()), rows: rows.slice(1) }; render();
+  },
+  async csvImport(form, fd) {
+    const c = S.ui.csv; const col = (k) => (fd.get(k) === "" || fd.get(k) === null ? -1 : Number(fd.get(k)));
+    if (c.kind === "apartments") {
+      const list = c.rows.map((r) => ({ name: clip(r[col("name")], 30), dong: clip(r[col("dong")], 20) })).filter((x) => x.name).slice(0, 3000);
+      await BE.db.set("config", "apartments", { list, updatedAt: now() }); S.ui.csv = null; toast(`아파트 ${list.length}개를 등록했어요`); await refresh(); return;
+    }
+    const ni = col("name"); if (ni < 0) { toast("학원 이름 열을 골라 주세요"); return; }
+    const filter = clip(fd.get("filter"), 40);
+    const exist = new Set(S.data.academies.map((a) => a.name + "|" + (a.address || "")));
+    const pick = (r, k) => (col(k) >= 0 ? clip(r[col(k)], 80) : "");
+    let rows = c.rows.filter((r) => r[ni] && r[ni].trim());
+    if (filter) rows = rows.filter((r) => r.join(" ").includes(filter));
+    const items = [];
+    rows.forEach((r) => {
+      const name = clip(r[ni], 40), address = pick(r, "address");
+      if (exist.has(name + "|" + address)) return; exist.add(name + "|" + address);
+      const dong = pick(r, "dong") || extractDong(address);
+      items.push({ name, address, dong: clip(dong, 20), category: mapCat(pick(r, "category") + " " + name), target: pick(r, "target"), fee: pick(r, "fee") ? clip(pick(r, "fee"), 60) + " · 공공데이터" : "", shuttle: "모름", hours: "" });
+    });
+    if (!items.length) { toast("가져올 새 학원이 없어요"); return; }
+    if (!(await ask(`${items.length.toLocaleString()}곳을 가져올까요?${items.length > 2000 ? "\n무료 요금제 하루 한도를 넘을 수 있어요. 지역 필터를 좁혀 주세요." : ""}`, "가져오기"))) return;
+    let n = 0;
+    for (const it of items) {
+      await BE.db.add("academies", { ...it, createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: "공공데이터", hidden: false });
+      n++; if (n % 50 === 0) toast(`${n} / ${items.length} 가져오는 중…`);
+    }
+    S.ui.csv = null; toast(`${n}곳을 가져왔어요`); await refresh();
+  }
+};
+async function markLog(lid) { if (!S.profile.firstLogId) { await BE.db.update("users", S.user.uid, { firstLogId: lid }); S.profile.firstLogId = lid; } }
+/* ---------- 나이스 학원·교습소 정보 API ---------- */
+function neisUrl(key, office, zone, page) {
+  const u = new URL(NEIS_URL);
+  const p = { KEY: key, Type: "json", pIndex: page, pSize: 1000, ATPT_OFCDC_SC_CODE: office };
+  if (zone) p.ADMST_ZONE_NM = zone;
+  Object.entries(p).forEach(([k, v]) => u.searchParams.set(k, v));
+  return u.toString();
+}
+function neisRowsFromJson(j) {
+  if (j && j.RESULT) { if (j.RESULT.CODE === "INFO-200") return []; throw new Error(j.RESULT.CODE + " " + j.RESULT.MESSAGE); }
+  const body = j && j.acaInsTiInfo; if (!Array.isArray(body)) throw new Error("응답 형식이 달라요");
+  const head = (body[0] && body[0].head) || []; const res = (head[1] && head[1].RESULT) || {};
+  if (res.CODE && res.CODE !== "INFO-000") throw new Error(res.CODE + " " + res.MESSAGE);
+  return (body[1] && body[1].row) || [];
+}
+async function neisFetchAll(key, office, zone, onProgress) {
+  const all = []; let total = Infinity;
+  for (let page = 1; page <= 60 && all.length < total; page++) {
+    let j;
+    try { const r = await fetch(neisUrl(key, office, zone, page)); j = await r.json(); }
+    catch (e) { throw new Error("BLOCKED"); }
+    if (j && j.RESULT && j.RESULT.CODE === "INFO-200") break;
+    const rows = neisRowsFromJson(j);
+    const head = j.acaInsTiInfo[0].head; total = Number(head[0].list_total_count) || rows.length;
+    all.push(...rows); onProgress(all.length, total);
+    if (rows.length < 1000) break;
+  }
+  return all;
+}
+function neisMock() {
+  const base = (id, nm, kind, st, addr, realm, crse, fee) => ({ ACA_ASNUM: id, ACA_NM: nm, ACA_INSTI_SC_NM: kind, REG_STTUS_NM: st, ADMST_ZONE_NM: "남구", FA_RDNMA: addr, FA_RDNDA: "", REALM_SC_NM: realm, LE_ORD_NM: "", LE_CRSE_NM: crse, PSNBY_THCC_CNTNT: fee, THCC_OTHBC_YN: fee ? "Y" : "N", FA_TELNO: "052-000-0000" });
+  return [
+    base("3010000001", "한빛수학학원", "학원", "개원", "예시시 남구 학원로 10 (중앙동)", "입시.검정 및 보습", "보습(수학)", "월 300,000원"),
+    base("3010000002", "새빛영재수학학원", "학원", "개원", "예시시 남구 새빛로 21 (새빛동)", "입시.검정 및 보습", "보습(수학)", "월 280,000원"),
+    base("3010000002", "새빛영재수학학원", "학원", "개원", "예시시 남구 새빛로 21 (새빛동)", "입시.검정 및 보습", "보습(과학)", "월 250,000원"),
+    base("3010000003", "푸른어학원", "학원", "개원", "예시시 남구 푸른로 5 (푸른동)", "국제화", "외국어(영어)", "월 320,000원"),
+    base("3010000004", "중앙코딩아카데미", "학원", "개원", "예시시 남구 학원로 33 (중앙동)", "정보", "컴퓨터(코딩)", ""),
+    base("3010000005", "하늘피아노교습소", "교습소", "개원", "예시시 남구 하늘로 2 (새빛동)", "예능", "음악", "월 150,000원"),
+    base("3010000006", "옛날보습학원", "학원", "폐원", "예시시 남구 옛길 1 (중앙동)", "입시.검정 및 보습", "보습", ""),
+    base("3010000007", "다른동논술학원", "학원", "개원", "예시시 남구 먼길 9 (먼동)", "입시.검정 및 보습", "논술", "")
+  ];
+}
+function neisGroup(rows) {
+  const m = new Map();
+  rows.forEach((r) => {
+    const id = String(r.ACA_ASNUM || "").trim(); if (!id) return;
+    let g = m.get(id);
+    if (!g) {
+      const address = clip([r.FA_RDNMA, r.FA_RDNDA].filter(Boolean).join(" "), 80);
+      g = { sourceId: id, name: clip(r.ACA_NM, 40), kind: r.ACA_INSTI_SC_NM || "", status: r.REG_STTUS_NM || "", address, dong: clip(extractDong(address), 20), phone: clip(r.FA_TELNO, 20), realm: new Set(), courses: new Set(), fees: new Set() };
+      m.set(id, g);
+    }
+    [r.REALM_SC_NM, r.LE_ORD_NM].filter(Boolean).forEach((x) => g.realm.add(x));
+    if (r.LE_CRSE_NM) g.courses.add(r.LE_CRSE_NM);
+    if (r.LE_CRSE_LIST_NM && !r.LE_CRSE_NM) g.courses.add(r.LE_CRSE_LIST_NM);
+    if (r.PSNBY_THCC_CNTNT && r.THCC_OTHBC_YN !== "N") g.fees.add(String(r.PSNBY_THCC_CNTNT).trim());
+  });
+  return [...m.values()].map((g) => { const realm = [...g.realm].join(", "), courses = [...g.courses].join(", "); return { ...g, realm, courses, fee: [...g.fees].join(" / "), category: mapCat(courses + " " + realm + " " + g.name) }; });
+}
+async function neisAnalyze(rows, region, filter, includeKyo) {
+  const groups = neisGroup(rows);
+  const blk = (await BE.db.get("config", "importBlock").catch(() => null)) || {};
+  const blocked = new Set(blk.ids || []);
+  const all = await BE.db.list("academies").catch(() => S.data.academies);
+  const ids = new Set(all.map((a) => a.id)), srcIds = new Set(all.map((a) => a.sourceId).filter(Boolean));
+  const closedSrc = new Set(all.filter((a) => a.closed).map((a) => a.sourceId).filter(Boolean));
+  const nameKeys = new Set(all.map((a) => normName(a.name) + "|" + (a.dong || "")));
+  const words = String(filter || "").split(",").map((w) => w.trim()).filter(Boolean);
+  const out = { region, rows: rows.length, total: groups.length, add: [], exist: 0, blocked: 0, closed: 0, kindSkip: 0, filtered: 0 };
+  groups.forEach((g) => {
+    if (words.length && !words.some((w) => g.address.includes(w))) { out.filtered++; return; }
+    if (/폐원|휴원|말소|취소|폐지/.test(g.status)) { out.closed++; return; }
+    if (!includeKyo && /교습소/.test(g.kind)) { out.kindSkip++; return; }
+    if (blocked.has(g.sourceId) || blocked.has("name:" + normName(g.name) + "|" + g.dong) || closedSrc.has(g.sourceId)) { out.blocked++; return; }
+    if (ids.has("neis_" + g.sourceId) || srcIds.has(g.sourceId) || nameKeys.has(normName(g.name) + "|" + g.dong)) { out.exist++; return; }
+    out.add.push(g);
+  });
+  S.ui.neis = out; render();
+}
+function mapCat(s) {
+  const m = [["수학", /수학|산수|연산/], ["영어", /영어|외국어|어학/], ["국어", /국어|독서|한글/], ["논술", /논술|글쓰기/], ["과학", /과학|물리|화학|생물/], ["코딩", /코딩|컴퓨터|정보|소프트웨어/], ["예체능", /음악|미술|피아노|태권|체육|무용|발레|수영|예능|운동/], ["종합", /종합|보습|입시|전과목/]];
+  const f = m.find(([, re]) => re.test(s)); return f ? f[0] : "기타";
+}
+
+/* ---------- CSV · 다운로드 · 암호화 ---------- */
+function parseCSV(t) {
+  const rows = []; let row = [], cur = "", q = false;
+  for (let i = 0; i < t.length; i++) {
+    const ch = t[i];
+    if (q) { if (ch === '"') { if (t[i + 1] === '"') { cur += '"'; i++; } else q = false; } else cur += ch; }
+    else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cur); cur = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && t[i + 1] === "\n") i++; row.push(cur); rows.push(row); row = []; cur = ""; }
+    else cur += ch;
+  }
+  if (cur || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+function download(content, name, type) {
+  const url = URL.createObjectURL(new Blob([content], { type }));
+  const a = document.createElement("a"); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 2000);
+}
+const b64 = (buf) => btoa(String.fromCharCode(...new Uint8Array(buf)));
+const unb64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+async function deriveKey(pw, salt) {
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({ name: "PBKDF2", salt, iterations: 250000, hash: "SHA-256" }, base, { name: "AES-GCM", length: 256 }, false, ["encrypt", "decrypt"]);
+}
+async function encryptText(text, pw) {
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pw, salt);
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, new TextEncoder().encode(text)));
+  let bin = ""; for (let i = 0; i < ct.length; i += 0x8000) bin += String.fromCharCode(...ct.subarray(i, i + 0x8000));
+  return { format: "hakding-backup-v1", kdf: "PBKDF2-SHA256-250000", cipher: "AES-256-GCM", salt: b64(salt), iv: b64(iv), data: btoa(bin) };
+}
+async function decryptText(obj, pw) {
+  if (obj.format !== "hakding-backup-v1") throw new Error("형식 아님");
+  const key = await deriveKey(pw, unb64(obj.salt));
+  const pt = await crypto.subtle.decrypt({ name: "AES-GCM", iv: unb64(obj.iv) }, key, unb64(obj.data));
+  return new TextDecoder().decode(pt);
+}
+
+/* =====================================================================
+   시작
+   ===================================================================== */
+(async function start() {
+  try { BE = DEMO ? makeLocalBackend() : await makeFirebaseBackend(); }
+  catch (e) { console.error(e); $("#app").innerHTML = `<div class="loading">연결에 실패했어요. 새로고침해 주세요.</div>`; return; }
+  countVisit();
+  let first = true;
+  BE.auth.onChange(async (u) => {
+    S.user = u; S.admin = isAdminUser(u); S.profile = null;
+    S.data.myReviews = []; S.data.reviews = []; S.data.rides = []; S.data.rooms = []; S.data.schedule = null;
+    if (u) { try { S.profile = await BE.db.get("users", u.uid); } catch (e) { console.warn(e); } }
+    await loadPublic(); await loadMember();
+    S.ready = true;
+    if (first) { first = false; route(); } else { if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
+  });
+})();
+</script>
+</body>
+</html>
