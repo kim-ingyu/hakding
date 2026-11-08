@@ -297,7 +297,7 @@ function makeLocalBackend() {
   return {
     db: {
       async get(c, id) { const d = col(c)[id]; return d ? { id, ...clone(d) } : null; },
-      async list(c, where) { let a = Object.entries(col(c)).map(([id, d]) => ({ id, ...clone(d) })); if (where) a = a.filter((d) => d[where[0]] === where[2]); return a; },
+      async list(c, where) { let a = Object.entries(col(c)).map(([id, d]) => ({ id, ...clone(d) })); if (where) { const [f, op, v] = where; a = a.filter((d) => (op === ">" ? (d[f] || 0) > v : d[f] === v)); } return a; },
       async set(c, id, data) { col(c)[id] = clone(data); save(); },
       async update(c, id, p) { if (!col(c)[id]) throw new Error("없는 문서"); Object.assign(col(c)[id], clone(p)); save(); },
       async add(c, data) { const id = c.slice(0, 1) + now().toString(36) + Math.random().toString(36).slice(2, 6); col(c)[id] = clone(data); save(); return id; },
@@ -361,15 +361,42 @@ let BE = null;
 const S = {
   ready: false, user: null, profile: null, admin: false,
   view: "home", param: null,
-  data: { academies: [], reviews: [], rides: [], rooms: [], myReviews: [], stats: {}, today: 0, schedule: null, apartments: [] },
+  data: { academies: [], full: {}, acadIndexed: false, indexMeta: null, reviews: [], rides: [], rooms: [], myReviews: [], stats: {}, today: 0, schedule: null, apartments: [] },
   ui: { cat: "전체", dong: "전체", sort: "rating", q: "", acadTab: "reviews", rankMode: "month", rideAcad: "전체", child: 0, adminTab: "stats", gateMode: "new", reviewFor: "", editReview: null, csv: null }
 };
 const passed = () => !!(S.profile && S.profile.firstReviewId && S.profile.firstLogId);
 const isAdminUser = (u) => !!u && (CONFIG.adminEmails.includes(u.email) || (DEMO && u.email === DEMO_ADMIN_EMAIL));
 
+/* ---------- 학원 목록 묶음(인덱스): 접속 1회에 학원 수천 곳을 문서 몇 개로 읽기 ---------- */
+const IDX_CHUNK = 1200;
+const toIdx = (a) => ({ i: a.id, n: a.name || "", c: a.category || "기타", d: a.dong || "", t: clip(a.target, 30), a: clip(a.address, 60), u: a.updatedAt || 0, h: a.hidden ? 1 : 0, x: a.closed ? 1 : 0, s: a.sourceId || "" });
+const fromIdx = (e) => ({ id: e.i, name: e.n, category: e.c, dong: e.d, target: e.t, address: e.a, updatedAt: e.u, hidden: !!e.h, closed: !!e.x, sourceId: e.s, _idx: true });
+async function loadAcademies() {
+  const meta = await BE.db.get("publicIndex", "meta").catch(() => null);
+  if (!meta || !meta.chunks) { S.data.acadIndexed = false; S.data.indexMeta = null; return BE.db.list("academies").catch(() => []); }
+  const parts = await Promise.all(Array.from({ length: meta.chunks }, (_, i) => BE.db.get("publicIndex", "academies_" + i).catch(() => null)));
+  const map = new Map();
+  parts.forEach((p) => ((p && p.list) || []).forEach((e) => map.set(e.i, fromIdx(e))));
+  const fresh = await BE.db.list("academies", ["updatedAt", ">", meta.builtAt]).catch(() => []);
+  fresh.forEach((a) => map.set(a.id, a));
+  S.data.acadIndexed = true; S.data.indexMeta = { ...meta, fresh: fresh.length };
+  return [...map.values()];
+}
+async function rebuildIndex() {
+  const t0 = now();
+  const all = await BE.db.list("academies");
+  const list = all.map(toIdx);
+  const chunks = Math.max(1, Math.ceil(list.length / IDX_CHUNK));
+  const old = (S.data.indexMeta && S.data.indexMeta.chunks) || 0;
+  for (let i = 0; i < chunks; i++) await BE.db.set("publicIndex", "academies_" + i, { list: list.slice(i * IDX_CHUNK, (i + 1) * IDX_CHUNK) });
+  for (let i = chunks; i < old; i++) await BE.db.del("publicIndex", "academies_" + i).catch(() => {});
+  await BE.db.set("publicIndex", "meta", { chunks, builtAt: t0, count: list.length });
+  return list.length;
+}
 async function loadPublic() {
+  S.data.full = {};
   const [acs, g, d] = await Promise.all([
-    BE.db.list("academies").catch(() => []),
+    loadAcademies(),
     BE.db.get("stats", "global").catch(() => null),
     BE.db.get("stats", "d" + ymd()).catch(() => null)
   ]);
@@ -578,7 +605,11 @@ function vAcademies() {
 
 /* ---------- 학원 상세 ---------- */
 function vAcademy() {
-  const a = S.data.academies.find((x) => x.id === S.param);
+  const base = S.data.academies.find((x) => x.id === S.param);
+  if (base && base._idx && !S.data.full[base.id]) {
+    BE.db.get("academies", base.id).then((f) => { if (f) { S.data.full[f.id] = f; if (S.view === "academy" && S.param === f.id) render(); } }).catch(() => {});
+  }
+  const a = base ? S.data.full[base.id] || base : null;
   if (!a) return `<div class="empty">학원을 찾을 수 없어요. <button class="link" data-act="nav" data-v="academies">목록으로</button></div>`;
   const show = S.user && (passed() || S.admin);
   const g = show ? aggFor(a.id) : null;
@@ -938,6 +969,10 @@ function vAdmin() {
   if (t === "stats") {
     const d = S.data;
     body = `<div class="grid2">${[["회원", d.stats.members || 0], ["학원", d.academies.length], ["후기", d.reviews.length], ["라이딩 글", d.rides.length], ["오늘 방문", d.today], ["누적 방문", d.stats.visits || 0], ["모임방", d.rooms.length], ["숨김 후기", d.reviews.filter((r) => r.hidden).length]].map(([l, n]) => `<div class="stat" style="border:1px solid var(--line)"><b>${Number(n).toLocaleString()}</b><span>${l}</span></div>`).join("")}</div>
+      <section class="card flat"><h3>학원 목록 묶음</h3>
+        <p class="small muted">${S.data.acadIndexed ? `${(S.data.indexMeta.count || 0).toLocaleString()}곳 · 마지막 갱신 ${fmtDate(S.data.indexMeta.builtAt)} · 이후 추가·수정 ${S.data.indexMeta.fresh}곳` : "아직 묶음이 없어요. 학원이 많으면 꼭 만들어 주세요."}</p>
+        <p class="xs muted">접속할 때마다 학원 수천 곳을 한 건씩 읽지 않도록 목록을 묶어 둔 문서예요. 동기화·폐원 처리 때 자동으로 갱신되고, 회원 수정이 많이 쌓이면(100곳 이상) 직접 눌러 주세요.</p>
+        <button class="btn ghost block" data-act="rebuildIdx">지금 갱신하기</button></section>
       <section class="card flat"><h3>동네별 라이딩 수요 (집계)</h3>${aggTable()}</section>`;
   } else if (t === "reports") {
     body = `<div id="adminReports"><div class="empty">불러오는 중…</div></div>`; setTimeout(loadReports, 0);
@@ -1147,8 +1182,9 @@ const A = {
     if (!passed() && !S.admin && !d.edit) { S.ui.reviewFor = d.id; go("gate"); return; }
     go("review", d.id);
   },
-  editAcad: (d) => {
-    const a = S.data.academies.find((x) => x.id === d.id);
+  editAcad: async (d) => {
+    let a = S.data.full[d.id] || S.data.academies.find((x) => x.id === d.id);
+    if (a && a._idx) { a = (await BE.db.get("academies", d.id).catch(() => null)) || a; S.data.full[a.id] = a; }
     modal(`<form class="col" data-form="editAcad" data-id="${esc(a.id)}"><h2>${esc(a.name)} 정보 수정</h2><p class="small muted">수정 내용은 이력에 닉네임과 함께 남아요.</p>${acadFormFields(a)}<button class="btn lg block" type="submit">저장</button></form>`);
   },
   addStory: (d) => modal(`<form class="col" data-form="story" data-id="${esc(d.id)}"><h2>학원 이야기 보태기</h2><p class="small muted">언제 생겼는지, 어떻게 변해왔는지, 어떤 선생님·반이 유명한지 등 아는 사실을 남겨 주세요.</p><textarea class="input" name="text" required minlength="10" maxlength="800"></textarea><button class="btn lg block" type="submit">남기기</button></form>`),
@@ -1251,13 +1287,15 @@ const A = {
       if (done % 50 === 0) toast(`${done.toLocaleString()} / ${n.add.length.toLocaleString()} 추가 중…`);
     }
     await BE.db.add("importLogs", { at: now(), uid: S.user.uid, nick: S.profile?.nick || "운영자", region: n.region, rows: n.rows, total: n.total, added: done, failed, existing: n.exist, blocked: n.blocked, closedSkipped: n.closed }).catch((e) => console.warn(e));
+    toast("학원 목록 묶음을 갱신하는 중…"); await rebuildIndex().catch((e) => console.warn(e));
     S.ui.neis = null; toast(`${done.toLocaleString()}곳을 추가했어요${failed ? ` (실패 ${failed})` : ""}`); await refresh();
   },
   acadClose: async (d) => {
     if (!(await ask("이 학원을 폐원 처리할까요?\n회원에게 숨겨지고, 후기는 보존돼요. 다음 동기화 때 다시 들어오지 않아요.", "폐원 처리"))) return;
-    try { await BE.db.update("academies", d.id, { hidden: true, closed: true, closedAt: now() }); if (d.rep) await BE.db.del("reports", d.rep); toast("폐원 처리했어요"); await refresh(); if (S.ui.adminTab === "reports" && S.view === "admin") loadReports(); } catch (e) { fail(e); }
+    try { await BE.db.update("academies", d.id, { hidden: true, closed: true, closedAt: now() }); if (d.rep) await BE.db.del("reports", d.rep); await rebuildIndex().catch(() => {}); toast("폐원 처리했어요"); await refresh(); if (S.ui.adminTab === "reports" && S.view === "admin") loadReports(); } catch (e) { fail(e); }
   },
-  acadRestore: async (d) => { try { await BE.db.update("academies", d.id, { hidden: false, closed: false }); toast("복구했어요"); await refresh(); } catch (e) { fail(e); } },
+  rebuildIdx: async () => { toast("갱신 중…"); try { const n = await rebuildIndex(); toast(`${n.toLocaleString()}곳으로 갱신했어요`); await refresh(); } catch (e) { fail(e); } },
+  acadRestore: async (d) => { try { await BE.db.update("academies", d.id, { hidden: false, closed: false }); await rebuildIndex().catch(() => {}); toast("복구했어요"); await refresh(); } catch (e) { fail(e); } },
   acadDelete: async (d) => {
     const a = S.data.academies.find((x) => x.id === d.id); if (!a) return;
     const cnt = S.data.reviews.filter((r) => r.academyId === a.id).length;
@@ -1268,12 +1306,14 @@ const A = {
       const ids = [...new Set([...(blk.ids || []), a.sourceId || "", "name:" + normName(a.name) + "|" + (a.dong || "")].filter(Boolean))];
       await BE.db.set("config", "importBlock", { ids, updatedAt: now() });
       await BE.db.del("academies", a.id);
-      toast("삭제했어요. 다음 동기화 때 다시 들어오지 않아요"); await refresh(); go("academies");
+      await rebuildIndex().catch(() => {}); toast("삭제했어요. 다음 동기화 때 다시 들어오지 않아요"); await refresh(); go("academies");
     } catch (e) { fail(e); }
   },
-  exportAcadCsv: () => {
+  exportAcadCsv: async () => {
+    toast("학원 정보를 모으는 중…");
+    const fullList = await BE.db.list("academies").catch(() => S.data.academies);
     const rows = [["학원명", "과목", "동네", "주소", "대상", "셔틀", "수업시간", "수강료", "후기수", ...ITEMS.map(([, l]) => l), "종합"]];
-    S.data.academies.forEach((a) => { const g = aggFor(a.id); rows.push([a.name, a.category, a.dong, a.address, a.target, a.shuttle, a.hours, a.fee, g.count, ...ITEMS.map(([k]) => (g.count ? r1(g.per[k]) : "")), g.count ? r1(g.overall) : ""]); });
+    fullList.forEach((a) => { const g = aggFor(a.id); rows.push([a.name, a.category, a.dong, a.address, a.target, a.shuttle, a.hours, a.fee, g.count, ...ITEMS.map(([k]) => (g.count ? r1(g.per[k]) : "")), g.count ? r1(g.overall) : ""]); });
     download("﻿" + rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n"), `학딩_학원목록_${ymd()}.csv`, "text/csv;charset=utf-8");
   }
 };
@@ -1333,7 +1373,7 @@ const F = {
     await markLog(lid); S.ui.reviewFor = aid; toast("고마워요! 이제 평가 하나만 남았어요"); await refresh();
   },
   async editAcad(form, fd, v) {
-    const a = S.data.academies.find((x) => x.id === form.dataset.id);
+    const a = S.data.full[form.dataset.id] || S.data.academies.find((x) => x.id === form.dataset.id);
     const fields = { category: "과목", dong: "동네", address: "주소", phone: "전화", target: "대상", shuttle: "셔틀", hours: "수업 시간", fee: "수강료" };
     const patch = {}; const changes = [];
     Object.entries(fields).forEach(([k, l]) => { const nv = clip(v(k), 80); if ((a[k] || "") !== nv) { patch[k] = nv; changes.push(`${l}: ${a[k] || "(없음)"} → ${nv || "(없음)"}`); } });
@@ -1489,7 +1529,7 @@ const F = {
       await BE.db.add("academies", { ...it, createdBy: S.user.uid, createdAt: now(), updatedAt: now(), updatedNick: "공공데이터", hidden: false });
       n++; if (n % 50 === 0) toast(`${n} / ${items.length} 가져오는 중…`);
     }
-    S.ui.csv = null; toast(`${n}곳을 가져왔어요`); await refresh();
+    await rebuildIndex().catch(() => {}); S.ui.csv = null; toast(`${n}곳을 가져왔어요`); await refresh();
   }
 };
 async function markLog(lid) { if (!S.profile.firstLogId) { await BE.db.update("users", S.user.uid, { firstLogId: lid }); S.profile.firstLogId = lid; } }
@@ -1556,7 +1596,7 @@ async function neisAnalyze(rows, region, filter, includeKyo) {
   const groups = neisGroup(rows);
   const blk = (await BE.db.get("config", "importBlock").catch(() => null)) || {};
   const blocked = new Set(blk.ids || []);
-  const all = await BE.db.list("academies").catch(() => S.data.academies);
+  const all = S.data.acadIndexed ? S.data.academies : await BE.db.list("academies").catch(() => S.data.academies);
   const ids = new Set(all.map((a) => a.id)), srcIds = new Set(all.map((a) => a.sourceId).filter(Boolean));
   const closedSrc = new Set(all.filter((a) => a.closed).map((a) => a.sourceId).filter(Boolean));
   const nameKeys = new Set(all.map((a) => normName(a.name) + "|" + (a.dong || "")));
