@@ -173,8 +173,8 @@ footer.foot button{background:none;border:0;color:var(--ink3);text-decoration:un
 .t3-item .rk{width:34px;height:34px;border-radius:10px;background:var(--brand-l);color:var(--brand);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
 .t3-item.first{border:2px solid var(--accent);background:linear-gradient(135deg,#FFFBEB,#fff)}
 .t3-item.first .rk{background:var(--accent);color:#3D2A05;animation:twinkle 1.6s ease-in-out infinite}
-.t3-item.first::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);transform:skewX(-20deg);animation:shine 2s ease-in-out infinite}
-@keyframes shine{0%{left:-60%}60%,100%{left:130%}}
+.t3-item.first::after{content:"";position:absolute;top:0;left:0;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.85),transparent);transform:translateX(-150%) skewX(-20deg);will-change:transform;animation:shine 2.4s ease-in-out infinite;pointer-events:none}
+@keyframes shine{0%{transform:translateX(-150%) skewX(-20deg)}60%,100%{transform:translateX(350%) skewX(-20deg)}}
 @keyframes twinkle{0%,100%{box-shadow:0 0 0 0 rgba(242,181,68,.7)}50%{box-shadow:0 0 0 6px rgba(242,181,68,0)}}
 .t3-tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
 .t3-tabs button{flex:none;border:0;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:700;background:#EEF1F4;color:var(--ink3);cursor:pointer}
@@ -193,6 +193,9 @@ footer.foot button{background:none;border:0;color:var(--ink3);text-decoration:un
 .mt-win{border:2px solid var(--accent);background:linear-gradient(160deg,#FFFBEB,#fff 60%);animation:zzan .6s cubic-bezier(.2,1.4,.4,1)}
 @keyframes zzan{0%{opacity:0;transform:scale(.7)}100%{opacity:1;transform:scale(1)}}
 .zzan{font-size:28px;font-weight:800;color:var(--brand);text-align:center;animation:zzan .5s ease}
+/* ---- 성능: 화면 밖 카드는 그리지 않음, 움직임 줄이기 설정 존중 ---- */
+.acad-grid > .acad{content-visibility:auto;contain-intrinsic-size:auto 104px}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
 /* ---- PC(넓은 화면): 모바일 화면은 그대로, 900px 이상에서만 ---- */
 .home-grid,.detail-grid{display:flex;flex-direction:column;gap:14px}
 .detail-grid > .col{gap:14px}
@@ -269,12 +272,23 @@ const extractDong = (addr) => ((String(addr || "").match(/\(([가-힣0-9]+(동|�
 const normName = (s) => String(s || "").replace(/\(.*?\)|\s|학원$|교습소$/g, "");
 // 학교 이름 맞추기: '신정초등학교' = '신정초', 띄어쓰기 무시
 const normSchool = (s) => String(s || "").replace(/\s/g, "").replace(/초등학교/g, "초").replace(/중학교/g, "중").replace(/고등학교/g, "고");
-const schoolDatalist = () => `<datalist id="schoolList">${(S.data.schools || []).map((x) => `<option value="${esc(x.n)}">${esc(x.d || "")}</option>`).join("")}${dongList().map((d) => `<option value="${esc(d)}">`).join("")}</datalist>`;
+// 학교·동 자동완성 목록 (학교 목록·동네 목록이 그대로면 다시 만들지 않음)
+let _sdC = {};
+const schoolDatalist = () => {
+  const sc = S.data.schools || [], dl = dongList();
+  if (_sdC.s !== sc || _sdC.d !== dl) _sdC = { s: sc, d: dl, v: `<datalist id="schoolList">${sc.map((x) => `<option value="${esc(x.n)}">${esc(x.d || "")}</option>`).join("")}${dl.map((d) => `<option value="${esc(d)}">`).join("")}</datalist>` };
+  return _sdC.v;
+};
 
 /* ---------- 유틸 ---------- */
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const now = () => Date.now();
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const KO = new Intl.Collator("ko");
+const byName = (a, b) => KO.compare(a.name || "", b.name || "");
+const LOADING = `<div class="loading">불러오는 중…</div>`;
+const PAGE = 30;   // 학원 목록 한 번에 그리는 개수
 const ymd = (t = now()) => { const d = new Date(t); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0"); };
 const fmtDate = (t) => { if (!t) return ""; const d = new Date(t); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`; };
 const md = (s) => { const [y, m, d] = s.split("-"); return `${Number(m)}/${Number(d)}`; };
@@ -370,7 +384,7 @@ function makeLocalBackend() {
   return {
     db: {
       async get(c, id) { const d = col(c)[id]; return d ? { id, ...clone(d) } : null; },
-      async list(c, where) { let a = Object.entries(col(c)).map(([id, d]) => ({ id, ...clone(d) })); if (where) { const [f, op, v] = where; a = a.filter((d) => (op === ">" ? (d[f] || 0) > v : d[f] === v)); } return a; },
+      async list(c, where, lim) { let a = Object.entries(col(c)).map(([id, d]) => ({ id, ...clone(d) })); if (where) { const [f, op, v] = where; a = a.filter((d) => (op === ">" ? (d[f] || 0) > v : d[f] === v)); } return lim ? a.slice(0, lim) : a; },
       async set(c, id, data) { col(c)[id] = clone(data); save(); },
       async update(c, id, p) { if (!col(c)[id]) throw new Error("없는 문서"); Object.assign(col(c)[id], clone(p)); save(); },
       async add(c, data) { const id = c.slice(0, 1) + now().toString(36) + Math.random().toString(36).slice(2, 6); col(c)[id] = clone(data); save(); return id; },
@@ -403,11 +417,12 @@ async function makeFirebaseBackend() {
     import(B + "firebase-analytics.js").then(async (GA) => { if (await GA.isSupported()) { const ga = GA.getAnalytics(app); track = (name, params) => { try { GA.logEvent(ga, name, params || {}); } catch (e) {} }; } }).catch(() => {});
   }
   const ref = (c, id) => F.doc(fs, c, id);
-  try { await A.getRedirectResult(auth); } catch (e) { console.warn(e); }
+  // 리다이렉트 로그인 결과는 기다리지 않음(모바일 첫 화면이 늦어지지 않게). 결과는 onAuthStateChanged 로 들어옴
+  A.getRedirectResult(auth).catch((e) => console.warn(e));
   return {
     db: {
       async get(c, id) { const s = await F.getDoc(ref(c, id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
-      async list(c, where) { const q = where ? F.query(F.collection(fs, c), F.where(...where)) : F.collection(fs, c); const s = await F.getDocs(q); return s.docs.map((d) => ({ id: d.id, ...d.data() })); },
+      async list(c, where, lim) { const cs = [...(where ? [F.where(...where)] : []), ...(lim ? [F.limit(lim)] : [])]; const q = cs.length ? F.query(F.collection(fs, c), ...cs) : F.collection(fs, c); const s = await F.getDocs(q); return s.docs.map((d) => ({ id: d.id, ...d.data() })); },
       set: (c, id, d) => F.setDoc(ref(c, id), d),
       update: (c, id, p) => F.updateDoc(ref(c, id), p),
       async add(c, d) { const r = await F.addDoc(F.collection(fs, c), d); return r.id; },
@@ -415,7 +430,7 @@ async function makeFirebaseBackend() {
       inc: (c, id, f) => F.setDoc(ref(c, id), { [f]: F.increment(1) }, { merge: true }),
       setKey: (c, id, m, k, v) => F.updateDoc(ref(c, id), { [m + "." + k]: v === null ? F.deleteField() : v }),
       // 한 번에 최대 400건씩 묶어 쓰기 (Firestore 일괄 쓰기 한도 500건)
-      async setMany(c, items) { const b = F.writeBatch(fs); items.forEach(({ id, data }) => b.set(ref(c, id), data)); await b.commit(); }
+      async setMany(c, items) { if (items.length > 450) throw new Error("일괄 쓰기는 450건 이하로 나눠 주세요"); const b = F.writeBatch(fs); items.forEach(({ id, data }) => b.set(ref(c, id), data)); await b.commit(); }
     },
     auth: {
       onChange(cb) { A.onAuthStateChanged(auth, (u) => cb(u ? { uid: u.uid, email: u.email, emailVerified: u.emailVerified, name: u.displayName } : null)); },
@@ -459,63 +474,122 @@ const isAdminUser = (u) => !!u && (CONFIG.adminEmails.includes(u.email) || (DEMO
 const IDX_CHUNK = 1200;
 const toIdx = (a) => ({ i: a.id, n: a.name || "", c: a.category || "기타", d: a.dong || "", t: clip(a.target, 30), a: clip(a.address, 60), u: a.updatedAt || 0, h: a.hidden ? 1 : 0, x: a.closed ? 1 : 0, s: a.sourceId || "", ...(a.shuttleArea ? { v: clip(a.shuttleArea, 150) } : {}), ...((a.targetGrades || []).length ? { g: a.targetGrades.join(",") } : {}), ...(a.shuttle && a.shuttle !== "모름" ? { p: a.shuttle } : {}) });
 const fromIdx = (e) => ({ id: e.i, name: e.n, category: e.c, dong: e.d, target: e.t, address: e.a, updatedAt: e.u, hidden: !!e.h, closed: !!e.x, sourceId: e.s, shuttleArea: e.v || "", targetGrades: e.g ? e.g.split(",") : [], shuttle: e.p || "", _idx: true });
+/* 학원 묶음 캐시: meta.builtAt 이 같으면 묶음 청크를 다시 받지 않음 (메모리 → localStorage 순)
+   → 재방문 시 Firestore 읽기 = meta 1건 + 묶음 이후 바뀐 학원 몇 건 */
+const IDX_LS = "hk_idx_v2";
+const IDX_FALLBACK_LIMIT = 400;   // 묶음이 아직 없을 때 일반 사용자가 읽는 최대 학원 수
+let idxMem = null;
+function idxCacheGet(builtAt) {
+  if (idxMem && idxMem.b === builtAt) return idxMem.list;
+  try { const c = JSON.parse(localStorage.getItem(IDX_LS) || "null"); if (c && c.b === builtAt && Array.isArray(c.list)) { idxMem = c; return c.list; } } catch (e) {}
+  return null;
+}
+function idxCacheSet(builtAt, list) {
+  idxMem = { b: builtAt, list };
+  try { localStorage.setItem(IDX_LS, JSON.stringify(idxMem)); } catch (e) { try { localStorage.removeItem(IDX_LS); } catch (_) {} }
+}
 async function loadAcademies() {
   const meta = await BE.db.get("publicIndex", "meta").catch(() => null);
-  if (!meta || !meta.chunks) { S.data.acadIndexed = false; S.data.indexMeta = null; return BE.db.list("academies").catch(() => []); }
-  const parts = await Promise.all(Array.from({ length: meta.chunks }, (_, i) => BE.db.get("publicIndex", "academies_" + i).catch(() => null)));
+  if (!meta || !meta.chunks) {
+    S.data.acadIndexed = false; S.data.indexMeta = null;
+    // 묶음이 없으면: 관리자만 전체를 읽고(곧 자동으로 묶음을 만듦), 일반 사용자는 일부만 읽어 폭주를 막음
+    return BE.db.list("academies", null, S.admin ? 0 : IDX_FALLBACK_LIMIT).catch(() => []);
+  }
+  let entries = idxCacheGet(meta.builtAt);
+  if (!entries) {
+    const parts = await Promise.all(Array.from({ length: meta.chunks }, (_, i) => BE.db.get("publicIndex", "academies_" + i).catch(() => null)));
+    entries = parts.flatMap((p) => (p && p.list) || []);
+    if (parts.every(Boolean)) idxCacheSet(meta.builtAt, entries);   // 일부라도 실패하면 캐시하지 않음
+  }
   const map = new Map();
-  parts.forEach((p) => ((p && p.list) || []).forEach((e) => map.set(e.i, fromIdx(e))));
+  entries.forEach((e) => map.set(e.i, fromIdx(e)));
   const fresh = await BE.db.list("academies", ["updatedAt", ">", meta.builtAt]).catch(() => []);
   fresh.forEach((a) => map.set(a.id, a));
   S.data.acadIndexed = true; S.data.indexMeta = { ...meta, fresh: fresh.length };
   return [...map.values()];
 }
-async function rebuildIndex() {
+// 묶음 다시 만들기 (관리자 전용). 동시에 여러 번 눌려도 한 번만 돌게 함
+let rebuilding = null;
+function rebuildIndex() { if (!rebuilding) rebuilding = doRebuildIndex().finally(() => (rebuilding = null)); return rebuilding; }
+async function doRebuildIndex() {
   const t0 = now();
   const all = await BE.db.list("academies");
   const list = all.map(toIdx);
   const chunks = Math.max(1, Math.ceil(list.length / IDX_CHUNK));
   const old = (S.data.indexMeta && S.data.indexMeta.chunks) || 0;
   for (let i = 0; i < chunks; i++) await BE.db.set("publicIndex", "academies_" + i, { list: list.slice(i * IDX_CHUNK, (i + 1) * IDX_CHUNK) });
+  await BE.db.set("publicIndex", "meta", { chunks, builtAt: t0, count: list.length });   // meta 를 마지막에 → 쓰는 도중 접속해도 예전 묶음을 온전히 읽음
   for (let i = chunks; i < old; i++) await BE.db.del("publicIndex", "academies_" + i).catch(() => {});
-  await BE.db.set("publicIndex", "meta", { chunks, builtAt: t0, count: list.length });
+  idxCacheSet(t0, list);
+  S.data.acadIndexed = true; S.data.indexMeta = { chunks, builtAt: t0, count: list.length, fresh: 0 };
   return list.length;
 }
-async function loadPublic() {
+// 숨김 학원은 관리자에게만
+function setAcademies(all) { S.data.allAcademies = all || []; S.data.academies = S.data.allAcademies.filter((a) => !a.hidden || S.admin); }
+// full=false: 새로고침용. 학원 목록만 다시(캐시 덕분에 meta + 변경분만) 읽고, 통계·학교·별점 요약은 건너뜀
+let pubExtrasLoaded = false;
+async function loadPublic(full = true) {
   S.data.full = {};
-  const [acs, g, d] = await Promise.all([
-    loadAcademies(),
-    BE.db.get("stats", "global").catch(() => null),
-    BE.db.get("stats", "d" + ymd()).catch(() => null),
-    BE.db.get("publicIndex", "schools").then((x) => (S.data.schools = (x && x.list) || [])).catch(() => (S.data.schools = [])),
-    BE.db.get("publicIndex", "ratings").then((x) => (S.data.ratingsPub = (x && x.list) || [])).catch(() => (S.data.ratingsPub = []))
-  ]);
-  S.data.academies = acs.filter((a) => !a.hidden || S.admin);
-  S.data.stats = g || {}; S.data.today = (d && d.visits) || 0;
-}
-async function loadMember() {
-  if (!S.user || !S.profile) return;
-  const tasks = [BE.db.list("reviews", ["uid", "==", S.user.uid]).then((r) => (S.data.myReviews = r)).catch(() => {})];
-  if (passed() || S.admin) {
-    tasks.push(BE.db.list("reviews").then((r) => (S.data.reviews = r)).catch((e) => console.warn(e)));
-    tasks.push(BE.db.list("rides").then((r) => (S.data.rides = r)).catch((e) => console.warn(e)));
-    tasks.push(BE.db.list("rooms").then((r) => (S.data.rooms = r.sort((a, b) => (a.order || 0) - (b.order || 0)))).catch((e) => console.warn(e)));
+  const tasks = [loadAcademies()];
+  if (full || !pubExtrasLoaded) {
+    pubExtrasLoaded = true;
+    tasks.push(
+      BE.db.get("stats", "global").then((g) => (S.data.stats = g || {})).catch(() => {}),
+      BE.db.get("stats", "d" + ymd()).then((d) => (S.data.today = (d && d.visits) || 0)).catch(() => {}),
+      BE.db.get("publicIndex", "schools").then((x) => (S.data.schools = (x && x.list) || [])).catch(() => (S.data.schools = [])),
+      BE.db.get("publicIndex", "ratings").then((x) => (S.data.ratingsPub = (x && x.list) || [])).catch(() => (S.data.ratingsPub = []))
+    );
   }
-  tasks.push(BE.db.get("schedules", S.user.uid).then((s) => (S.data.schedule = s || { children: [] })).catch(() => (S.data.schedule = { children: [] })));
-  tasks.push(BE.db.get("config", "apartments").then((c) => (S.data.apartments = (c && c.list) || [])).catch(() => {}));
-  if (S.admin) tasks.push(BE.db.get("adminSecrets", "neis").then((d) => (S.data.neisKeyServer = (d && d.key) || "")).catch(() => {}));
-  await Promise.all(tasks);
+  const [acs] = await Promise.all(tasks);
+  setAcademies(acs);
 }
-async function refresh() { await loadPublic(); await loadMember(); if (S.admin) syncRatings(); render(); }
+// 회원 데이터: 다 모은 뒤 한 번에 반영. 그사이 계정이 바뀌면(로그아웃 등) 버림
+let authSeq = 0;
+async function loadMember() {
+  const seq = authSeq;
+  if (!S.user || !S.profile) { S.memberReady = true; return; }
+  const uid = S.user.uid, out = {};
+  const T = (p, k, fb) => p.then((v) => (out[k] = v)).catch((e) => { console.warn(k, e); out[k] = fb; });
+  const tasks = [T(BE.db.list("reviews", ["uid", "==", uid]), "myReviews", S.data.myReviews || [])];
+  if (passed() || S.admin) {
+    tasks.push(T(BE.db.list("reviews"), "reviews", S.data.reviews || []));
+    tasks.push(T(BE.db.list("rides"), "rides", S.data.rides || []));
+    tasks.push(T(BE.db.list("rooms").then((r) => r.sort((a, b) => (a.order || 0) - (b.order || 0))), "rooms", S.data.rooms || []));
+  }
+  tasks.push(T(BE.db.get("schedules", uid).then((s) => s || { children: [] }), "schedule", S.data.schedule || { children: [] }));
+  tasks.push(T(BE.db.get("config", "apartments").then((c) => (c && c.list) || []), "apartments", S.data.apartments || []));
+  if (S.admin) tasks.push(T(BE.db.get("adminSecrets", "neis").then((d) => (d && d.key) || ""), "neisKeyServer", S.data.neisKeyServer || ""));
+  await Promise.all(tasks);
+  if (seq !== authSeq) return;
+  Object.assign(S.data, out); S.memberReady = true;
+}
+async function refresh() {
+  try { await loadPublic(false); await loadMember(); if (S.admin) { syncRatings(); maybeAutoIndex(); } }
+  catch (e) { console.warn("새로고침 실패", e); }
+  render();
+}
+// 관리자 접속 때: 묶음이 없거나 묶음 이후 변경이 100곳 넘게 쌓였으면 뒤에서 조용히 다시 묶음
+let autoIdxTried = false;
+function maybeAutoIndex() {
+  if (!S.admin || autoIdxTried) return;
+  const m = S.data.indexMeta;
+  if (S.data.acadIndexed ? (m && (m.fresh || 0) < 100) : !S.data.academies.length) return;
+  autoIdxTried = true;
+  rebuildIndex().then((n) => console.info("학원 목록 묶음 자동 갱신:", n)).catch((e) => console.warn("묶음 자동 갱신 실패", e));
+}
 // 학원별 별점 요약: 회원은 후기로 바로 계산, 비회원은 공개 요약(publicIndex/ratings, 관리자 접속 때 갱신)
 // 요약 한 줄 = [학원id, 종합, 후기수, 성적, 강사, 관리, 학원비, 분위기]
+// 후기 배열·요약 배열이 그대로면 다시 계산하지 않음
+let _rmC = {};
 function ratingMap() {
+  if (_rmC.r === S.data.reviews && _rmC.p === S.data.ratingsPub) return _rmC.m;
   const m = {};
   if (S.data.reviews.length) {
     const by = {};
     S.data.reviews.filter((r) => !r.hidden).forEach((r) => (by[r.academyId] = by[r.academyId] || []).push(r));
     Object.entries(by).forEach(([id, rs]) => { const per = Object.fromEntries(ITEMS.map(([k]) => [k, avg(rs.map((r) => r.scores?.[k] || 0))])); m[id] = { o: avg(ITEMS.map(([k]) => per[k])), c: rs.length, per }; });
   } else (S.data.ratingsPub || []).forEach(([id, o, c, ...v]) => (m[id] = { o, c, per: Object.fromEntries(ITEMS.map(([k], i) => [k, v[i] || 0])) }));
+  _rmC = { r: S.data.reviews, p: S.data.ratingsPub, m };
   return m;
 }
 async function syncRatings() {
@@ -524,17 +598,29 @@ async function syncRatings() {
   if (JSON.stringify(list) === JSON.stringify(S.data.ratingsPub || [])) return;   // 바뀐 게 없으면 쓰지 않음
   try { await BE.db.set("publicIndex", "ratings", { list, builtAt: now() }); S.data.ratingsPub = list; } catch (e) { console.warn("별점 요약 갱신 실패", e); }
 }
-function top3Html() {
-  const i = (S.ui.t3 || 0) % T3_CATS.length, c = T3_CATS[i], rm = S.data._rm || ratingMap();
-  const top = S.data.academies.filter((a) => !a.hidden && rm[a.id] && (c === "전체" || (c === "예체능" ? isArts(a.category) : a.category === c)))
+// 분야별 TOP3: 분야마다 한 번만 계산해 두고 2초마다 탭만 바꿈
+let _t3C = {};
+function top3For(c) {
+  const rm = ratingMap();
+  if (_t3C.rm !== rm || _t3C.ac !== S.data.academies) _t3C = { rm, ac: S.data.academies, m: {} };
+  if (!_t3C.m[c]) _t3C.m[c] = S.data.academies.filter((a) => !a.hidden && rm[a.id] && (c === "전체" || (c === "예체능" ? isArts(a.category) : a.category === c)))
     .sort((x, y) => rm[y.id].o - rm[x.id].o || rm[y.id].c - rm[x.id].c).slice(0, 3);
+  return _t3C.m[c];
+}
+function top3Html() {
+  const i = (S.ui.t3 || 0) % T3_CATS.length, c = T3_CATS[i], rm = ratingMap();
+  const top = top3For(c);
   return `<div class="t3-tabs" role="tablist">${T3_CATS.map((k, j) => `<button role="tab" class="${j === i ? "on" : ""}" aria-selected="${j === i}" data-act="t3" data-i="${j}">${k}</button>`).join("")}</div>
     <div class="t3-body">${top.map((a, j) => `<button class="t3-item ${j === 0 ? "first" : ""}" data-act="nav" data-v="academy" data-p="${esc(a.id)}"><span class="rk">${j === 0 ? "👑" : j + 1}</span><span class="grow col" style="gap:0"><b class="ellipsis">${j === 0 ? "1위 · " : ""}${esc(a.name)}</b><span class="row small">${starText(rm[a.id].o)} <span class="score">${r1(rm[a.id].o)}</span><span class="muted">후기 ${rm[a.id].c} · ${esc(a.dong || "")}</span></span></span></button>`).join("") || `<div class="empty">${esc(c)} 학원은 아직 평가가 없어요.<br><button class="link" data-act="nav" data-v="academies">첫 후기를 남겨 주세요</button></div>`}</div>`;
 }
 let t3Timer = null;
 function startT3() {
   clearInterval(t3Timer);
-  t3Timer = setInterval(() => { const box = $("#t3"); if (!box) { clearInterval(t3Timer); return; } S.ui.t3 = ((S.ui.t3 || 0) + 1) % T3_CATS.length; box.innerHTML = top3Html(); }, 2000);
+  t3Timer = setInterval(() => {
+    const box = $("#t3"); if (!box) { clearInterval(t3Timer); return; }
+    if (document.hidden) return;   // 백그라운드 탭에서는 쉬기
+    S.ui.t3 = ((S.ui.t3 || 0) + 1) % T3_CATS.length; box.innerHTML = top3Html();
+  }, 2000);
 }
 
 async function countVisit() {
@@ -547,12 +633,22 @@ async function countVisit() {
 
 /* ---------- 계산 ---------- */
 const visibleReviews = () => S.data.reviews.filter((r) => !r.hidden || S.admin);
-function aggFor(aid) {
-  const rs = visibleReviews().filter((r) => r.academyId === aid);
-  const per = Object.fromEntries(ITEMS.map(([k]) => [k, avg(rs.map((r) => r.scores?.[k] || 0))]));
-  const overall = rs.length ? avg(ITEMS.map(([k]) => per[k])) : 0;
-  return { count: rs.length, per, overall, reviews: rs.sort((a, b) => keys(b.likes).length - keys(a.likes).length || b.createdAt - a.createdAt) };
+// 학원별 후기 묶음·평균: 후기 배열이 그대로면 한 번만 계산 (목록에서 카드마다 전체 후기를 훑지 않게)
+let _agC = {};
+const EMPTY_AGG = { count: 0, per: Object.fromEntries(ITEMS.map(([k]) => [k, 0])), overall: 0, reviews: [] };
+function aggAll() {
+  if (_agC.r === S.data.reviews && _agC.a === S.admin) return _agC.m;
+  const by = new Map();
+  visibleReviews().forEach((r) => { if (!by.has(r.academyId)) by.set(r.academyId, []); by.get(r.academyId).push(r); });
+  const m = new Map();
+  by.forEach((rs, id) => {
+    const per = Object.fromEntries(ITEMS.map(([k]) => [k, avg(rs.map((r) => r.scores?.[k] || 0))]));
+    m.set(id, { count: rs.length, per, overall: avg(ITEMS.map(([k]) => per[k])), reviews: rs.sort((a, b) => keys(b.likes).length - keys(a.likes).length || b.createdAt - a.createdAt) });
+  });
+  _agC = { r: S.data.reviews, a: S.admin, m };
+  return m;
 }
+function aggFor(aid) { return aggAll().get(aid) || EMPTY_AGG; }
 function ranking(mode) {
   const since = mode === "month" ? new Date(new Date().getFullYear(), new Date().getMonth(), 1).getTime() : 0;
   const m = {};
@@ -563,8 +659,19 @@ function ranking(mode) {
   });
   return Object.values(m).filter((x) => x.likes > 0).sort((a, b) => b.likes - a.likes || b.reviews - a.reviews).slice(0, 5);
 }
-const acadName = (id) => (S.data.academies.find((a) => a.id === id) || {}).name || "(삭제된 학원)";
-const dongList = () => [...new Set([...S.data.academies.map((a) => a.dong), ...S.data.rooms.map((r) => r.dong), ...S.data.apartments.map((a) => a.dong)].filter(Boolean))].sort();
+// id → 학원 (목록이 바뀔 때만 다시 만듦)
+let _acMap = {};
+function acadGet(id) {
+  if (_acMap.src !== S.data.academies) _acMap = { src: S.data.academies, m: new Map(S.data.academies.map((a) => [a.id, a])) };
+  return _acMap.m.get(id);
+}
+const acadName = (id) => (acadGet(id) || {}).name || "(삭제된 학원)";
+let _dlC = {};
+const dongList = () => {
+  const d = S.data;
+  if (_dlC.a !== d.academies || _dlC.r !== d.rooms || _dlC.p !== d.apartments) _dlC = { a: d.academies, r: d.rooms, p: d.apartments, v: [...new Set([...d.academies.map((a) => a.dong), ...(d.rooms || []).map((r) => r.dong), ...(d.apartments || []).map((a) => a.dong)].filter(Boolean))].sort(KO.compare) };
+  return _dlC.v;
+};
 
 /* =====================================================================
    라우팅
@@ -584,7 +691,18 @@ window.addEventListener("hashchange", route);
    렌더링
    ===================================================================== */
 function render() {
+  try { renderApp(); }
+  catch (e) {
+    console.error(e);
+    const app = $("#app");
+    if (app) app.innerHTML = `<div class="loading">화면을 그리다 문제가 생겼어요.<br><button class="btn" style="margin-top:12px" data-act="reload">새로고침</button></div>`;
+  }
+}
+function renderApp() {
   const app = $("#app");
+  // 검색창에 입력 중이면 입력값·포커스 지키기 (데이터가 늦게 도착해 다시 그릴 때)
+  const ae = document.activeElement;
+  if (ae && ae.id === "acadSearch") { S.ui.q = ae.value.trim(); S.ui.focusSearch = true; }
   if (!S.ready) { app.innerHTML = `<div class="loading">학딩을 불러오는 중…</div>`; return; }
   let v = S.view;
   const needLogin = ["rides", "rooms", "schedule", "me", "admin", "gate", "onboard", "review"];
@@ -612,6 +730,7 @@ function render() {
 }
 function afterRender() {
   if ($("#t3")) startT3();
+  wireMore();
   const q = $("#acadSearch"); if (q && S.ui.focusSearch) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); S.ui.focusSearch = false; }
 }
 
@@ -711,17 +830,29 @@ function acadListData() {
   if (S.ui.dong !== "전체") list = list.filter((a) => a.dong === S.ui.dong);
   if (S.ui.q) list = list.filter((a) => matchQ(a, S.ui.q));
   const withAgg = list.map((a) => ({ a, g: show ? aggFor(a.id) : { count: 0, overall: 0 } }));
-  const sorters = { rating: (x, y) => y.g.overall - x.g.overall || y.g.count - x.g.count, count: (x, y) => y.g.count - x.g.count, name: (x, y) => x.a.name.localeCompare(y.a.name, "ko"), recent: (x, y) => (y.a.updatedAt || 0) - (x.a.updatedAt || 0) };
+  const sorters = { rating: (x, y) => y.g.overall - x.g.overall || y.g.count - x.g.count, count: (x, y) => y.g.count - x.g.count, name: (x, y) => byName(x.a, y.a), recent: (x, y) => (y.a.updatedAt || 0) - (x.a.updatedAt || 0) };
   withAgg.sort(sorters[show ? S.ui.sort : "name"]);
   return { show, withAgg };
 }
 function acadListHtml() {
   const { show, withAgg } = acadListData();
-  return `<p class="small muted" style="padding:0 2px">${withAgg.length}곳</p>
-    <div class="col acad-grid">${withAgg.slice(0, 300).map((x) => acadCard(x.a, show, true)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>${withAgg.length > 300 ? `<p class="small muted">검색어나 과목으로 좁혀 주세요 (상위 300곳 표시)</p>` : ""}`;
+  const lim = S.ui.acadLimit || PAGE;
+  return `<p class="small muted" style="padding:0 2px">${withAgg.length.toLocaleString()}곳</p>
+    <div class="col acad-grid">${withAgg.slice(0, lim).map((x) => acadCard(x.a, show, true)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>
+    ${withAgg.length > lim ? `<button class="btn ghost block" data-act="moreAcad">더 보기 (${lim.toLocaleString()} / ${withAgg.length.toLocaleString()})</button>` : ""}`;
+}
+function refreshAcadList() { const box = $("#acadList"); if (box) { box.innerHTML = acadListHtml(); wireMore(); } }
+// '더 보기' 버튼이 화면 가까이 오면 자동으로 다음 30곳
+let moreIO = null;
+function wireMore() {
+  if (moreIO) { moreIO.disconnect(); moreIO = null; }
+  const b = $('[data-act="moreAcad"]'); if (!b || !("IntersectionObserver" in window)) return;
+  moreIO = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { moreIO.disconnect(); moreIO = null; A.moreAcad(); } }, { rootMargin: "400px 0px" });
+  moreIO.observe(b);
 }
 function vAcademies() {
   const show = S.user && (passed() || S.admin);
+  S.ui.acadLimit = PAGE;   // 필터·정렬이 바뀌어 다시 그릴 때는 처음 30곳부터
   return `
     <section class="row between" style="padding:0 2px"><h1>학원 정보</h1>${S.user && (passed() || S.admin) ? `<button class="btn sm ghost" data-act="addAcad">학원 추가</button>` : ""}</section>
     ${isStaff() ? "" : `<section class="cta"><div class="col" style="gap:4px"><b>보내본 학원, 솔직한 후기를 남겨 주세요</b><span class="small">${esc(CONFIG.giftText)}</span></div><button class="btn lg block" data-act="reviewStart">✍️ 후기 쓰기</button></section>`}
@@ -744,7 +875,7 @@ function vAcademies() {
 
 /* ---------- 학원 상세 ---------- */
 function vAcademy() {
-  const base = S.data.academies.find((x) => x.id === S.param);
+  const base = acadGet(S.param);
   if (base && base._idx && !S.data.full[base.id]) {
     BE.db.get("academies", base.id).then((f) => { if (f) { S.data.full[f.id] = f; if (S.view === "academy" && S.param === f.id) render(); } }).catch(() => {});
   }
@@ -893,7 +1024,6 @@ function vOnboard() {
 function vGate() {
   const p = S.profile; const s1 = p.staff ? !!p.firstLogId : true, s2 = !!p.firstReviewId || !!p.staff;
   const mode = S.ui.gateMode;
-  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
   let step = "";
   if (!s1) {
     step = `
@@ -903,7 +1033,7 @@ function vGate() {
         <div class="tabbar"><button class="${mode === "new" ? "on" : ""}" data-act="gateMode" data-m="new">새 학원 등록</button><button class="${mode === "story" ? "on" : ""}" data-act="gateMode" data-m="story">기존 학원에 정보 보태기</button></div>
         ${mode === "new" ? `<form class="col" data-form="newAcad">${acadFormFields()}<button class="btn lg block" type="submit">학원 등록하기</button></form>`
         : `<form class="col" data-form="gateStory">
-            <label class="f">학원 선택 *<select class="input" name="academyId" required><option value="">학원을 골라 주세요</option>${acs.map((a) => `<option value="${esc(a.id)}">${esc(a.name)} (${esc(a.dong || "")})</option>`).join("")}</select></label>
+            ${acadPicker("", false)}
             <label class="f">보탤 정보 * <span class="hint">학원 역사, 선생님, 반 구성, 시험 대비 방식, 수강료 등 아는 사실 (20자 이상)</span><textarea class="input" name="text" required minlength="20" maxlength="800" placeholder="예: 2021년에 개원했고 원장님이 직접 중등 심화반을 가르쳐요. 레벨 테스트 후 반 배정해요."></textarea></label>
             <button class="btn lg block" type="submit">정보 보태기</button>
           </form>`}
@@ -924,7 +1054,6 @@ function vGate() {
 
 /* ---------- 후기 폼 ---------- */
 function reviewFormHtml(aid, edit, isGate) {
-  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
   const e = edit || {};
   return `
     <form class="card" data-form="review" data-edit="${esc(e.id || "")}" data-gate="${isGate ? 1 : 0}">
@@ -948,16 +1077,17 @@ function reviewFormHtml(aid, edit, isGate) {
     </form>`;
 }
 // 학원 이름으로 고르기 (영문·한글 읽기 매칭) + 없으면 추가 후 바로 후기
-function acadPicker(sel) {
-  const a = S.data.academies.find((x) => x.id === sel);
+function acadPicker(sel, withAdd = true) {
+  const a = acadGet(sel);
   return `<div class="col" style="gap:6px"><span class="f" style="font-weight:700">학원 *</span>
     <input type="hidden" name="academyId" value="${esc(a ? a.id : "")}">
     <input class="input" data-input="pick" placeholder="학원 이름 검색 (예: stn, 에스티엔)" value="${esc(a ? a.name : "")}" autocomplete="off" aria-label="학원 이름 검색">
     <div class="pick-list" id="pickList">${a ? `<div class="pick-item on"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")}</span></div>` : ""}</div>
-    <button class="link small" type="button" style="align-self:flex-start" data-act="addThenReview">찾는 학원이 없어요 → 학원 추가하고 후기 쓰기</button></div>`;
+    ${withAdd ? `<button class="link small" type="button" style="align-self:flex-start" data-act="addThenReview">찾는 학원이 없어요 → 학원 추가하고 후기 쓰기</button>` : ""}</div>`;
 }
 function pickListHtml(q) {
-  const list = S.data.academies.filter((a) => !a.hidden && matchQ(a, q)).slice(0, 8);
+  const list = [];   // 8곳 찾으면 바로 멈춤
+  for (const a of S.data.academies) { if (!a.hidden && matchQ(a, q)) { list.push(a); if (list.length >= 8) break; } }
   return list.map((a) => `<button type="button" class="pick-item" data-act="pickAcad" data-id="${esc(a.id)}"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")} · ${esc(a.category || "")}</span></button>`).join("") || `<p class="small muted">찾는 학원이 없어요. 아래에서 추가해 주세요.</p>`;
 }
 function vReviewForm() {
@@ -1033,6 +1163,7 @@ function mtResultHtml() {
 
 /* ---------- 라이딩 ---------- */
 function vRides() {
+  if (!S.memberReady) return LOADING;
   let list = S.data.rides.slice().sort((a, b) => b.createdAt - a.createdAt);
   if (S.ui.rideAcad !== "전체") list = list.filter((r) => r.academyId === S.ui.rideAcad);
   const today = isoDay(0);
@@ -1067,11 +1198,10 @@ function vRides() {
     }).join("") || `<div class="empty">아직 라이딩 글이 없어요. 첫 글을 남겨 주세요.</div>`}</div>`;
 }
 function rideFormModal() {
-  const acs = S.data.academies.slice().sort((a, b) => a.name.localeCompare(b.name, "ko"));
   modal(`<form class="col" data-form="ride">
     <h2>라이딩 글쓰기</h2>
     <fieldset><legend>종류 *</legend><div class="row"><label class="check"><input type="radio" name="type" value="offer" checked>태워줄게요</label><label class="check"><input type="radio" name="type" value="need">도움 필요해요</label></div></fieldset>
-    <label class="f">학원 *<select class="input" name="academyId" required><option value="">선택</option>${acs.map((a) => `<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("")}</select></label>
+    ${acadPicker("", false)}
     <fieldset><legend>요일 *</legend><div class="grid3" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${DAYS.map((d) => `<label class="check" style="flex-direction:column;align-items:center;gap:2px;padding:0"><input type="checkbox" name="days" value="${d}">${d}</label>`).join("")}</div></fieldset>
     <div class="grid2">
       <label class="f">출발 시간 *<input class="input" type="time" name="time" required step="600" value="16:30"></label>
@@ -1087,6 +1217,7 @@ function rideFormModal() {
 
 /* ---------- 모임방 ---------- */
 function vRooms() {
+  if (!S.memberReady) return LOADING;
   const groups = {};
   S.data.rooms.forEach((r) => (groups[r.type || "기타"] = groups[r.type || "기타"] || []).push(r));
   const mine = (r) => r.dong === S.profile.dong || (S.profile.apt && r.name === S.profile.apt);
@@ -1112,6 +1243,7 @@ function vRooms() {
 
 /* ---------- 스케줄러 ---------- */
 function vSchedule() {
+  if (!S.memberReady) return LOADING;
   const sc = S.data.schedule || { children: [] };
   const kids = sc.children || [];
   const ci = Math.min(S.ui.child, Math.max(0, kids.length - 1));
@@ -1140,6 +1272,7 @@ function vSchedule() {
 
 /* ---------- 내 정보 ---------- */
 function vMe() {
+  if (!S.memberReady) return LOADING;
   const p = S.profile || {};
   return `
     <section class="card">
@@ -1404,9 +1537,12 @@ const A = {
   policyModal: () => modal(policyHtml()),
   agreeAll: (d, el) => document.querySelectorAll(".agree").forEach((c) => (c.checked = el.checked)),
   cat: (d) => { S.ui.cat = d.c; render(); },
+  reload: () => location.reload(),
+  moreAcad: () => { S.ui.acadLimit = (S.ui.acadLimit || PAGE) + PAGE; refreshAcadList(); },
   pickAcad: (d, el) => {
-    const f = el.closest("form, .modal"); const a = S.data.academies.find((x) => x.id === d.id); if (!f || !a) return;
-    if (f.dataset.form === "review") { f.querySelector('[name="academyId"]').value = a.id; f.querySelector('[data-input="pick"]').value = a.name; f.querySelector("#pickList").innerHTML = `<div class="pick-item on"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")}</span></div>`; return; }
+    const a = acadGet(d.id); if (!a) return;
+    const f = el.closest("form");
+    if (f && f.querySelector('[name="academyId"]')) { f.querySelector('[name="academyId"]').value = a.id; f.querySelector('[data-input="pick"]').value = a.name; f.querySelector("#pickList").innerHTML = `<div class="pick-item on"><b>${esc(a.name)}</b><span class="xs muted">${esc(a.dong || "")}</span></div>`; return; }
     closeModal(); A.writeReview({ id: a.id });   // 학원 탭 [후기 쓰기]에서 고른 경우
   },
   addThenReview: () => { S.ui.addThenReview = true; A.addAcad(); },
@@ -1440,7 +1576,7 @@ const A = {
     go("review", d.id);
   },
   editAcad: async (d) => {
-    let a = S.data.full[d.id] || S.data.academies.find((x) => x.id === d.id);
+    let a = S.data.full[d.id] || acadGet(d.id);
     if (a && a._idx) { a = (await BE.db.get("academies", d.id).catch(() => null)) || a; S.data.full[a.id] = a; }
     modal(`<form class="col" data-form="editAcad" data-id="${esc(a.id)}"><h2>${esc(a.name)} 정보 수정</h2><p class="small muted">수정 내용은 이력에 닉네임과 함께 남아요.</p>${acadFormFields(a)}<button class="btn lg block" type="submit">저장</button></form>`);
   },
@@ -1494,7 +1630,8 @@ const A = {
   renameChild: () => { const k = S.data.schedule.children[S.ui.child]; modal(`<form class="col" data-form="child" data-i="${S.ui.child}"><h2>이름·색 바꾸기</h2><label class="f">별칭<input class="input" name="label" required maxlength="10" value="${esc(k.label)}"></label><fieldset><legend>색</legend><div class="row wrap">${COLORS.map((c) => `<label class="check"><input type="radio" name="color" value="${c}" ${k.color === c ? "checked" : ""}><span class="dot" style="width:22px;height:22px;border-radius:11px;background:${c}"></span></label>`).join("")}</div></fieldset><button class="btn lg block" type="submit">저장</button></form>`); },
   delChild: async () => { const sc = S.data.schedule; const k = sc.children[S.ui.child]; if (!(await ask(`${k.label}의 일정을 모두 삭제할까요?`, "삭제", true))) return; sc.children.splice(S.ui.child, 1); S.ui.child = 0; await saveSchedule(); },
   addItem: () => {
-    const acs = S.data.academies.map((a) => a.name);
+    // 자동완성은 내가 평가한 학원 + 우리 동네 학원(최대 300곳)만 — 수천 개 option 은 모바일에서 무거움
+    const acs = [...new Set([...S.data.myReviews.map((r) => acadName(r.academyId)), ...S.data.academies.filter((a) => !a.hidden && a.dong === S.profile.dong).slice(0, 300).map((a) => a.name)])];
     modal(`<form class="col" data-form="item"><h2>일정 추가</h2>
       <label class="f">학원·활동 *<input class="input" name="title" required maxlength="30" list="acadNames" placeholder="예: 한빛수학학원"></label><datalist id="acadNames">${acs.map((n) => `<option value="${esc(n)}">`).join("")}</datalist>
       <fieldset><legend>요일 *</legend><div class="grid3" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${DAYS.map((d) => `<label class="check" style="flex-direction:column;align-items:center;gap:2px;padding:0"><input type="checkbox" name="days" value="${d}">${d}</label>`).join("")}</div></fieldset>
@@ -1555,25 +1692,45 @@ const A = {
   },
   neisApply: async () => {
     const n = S.ui.neis; if (!n || !n.add.length) return;
+    if (S.ui.syncing) { toast("이미 추가하는 중이에요. 끝날 때까지 기다려 주세요"); return; }
     if (!(await ask(`새 학원 ${n.add.length.toLocaleString()}곳을 추가할까요?\n이미 있는 학원은 건드리지 않아요.`, "추가하기"))) return;
-    // 사전 점검: 학원 목록 묶음(publicIndex)을 쓸 수 있는지 먼저 확인.
-    // 묶음 갱신이 실패한 채 수천 곳을 넣으면, 접속할 때마다 새 학원 전부를 따로 읽어 무료 읽기 한도가 금방 바닥남.
-    toast("학원 목록 묶음 쓰기 권한을 확인하는 중…");
-    try { await rebuildIndex(); }
-    catch (e) { console.error(e); await ask(`학원 목록 묶음(publicIndex)을 저장하지 못해 추가를 멈췄어요.${e && e.code ? ` (${e.code})` : ""}\n\nFirebase 콘솔 › Firestore › 규칙 탭에 최신 firestore.rules 를 붙여넣고 [게시]한 뒤 다시 시도해 주세요.`, "확인"); return; }
-    let done = 0, failed = 0; const t = now(); const STEP = 400;
-    for (let i = 0; i < n.add.length; i += STEP) {
-      const items = n.add.slice(i, i + STEP).map((g) => ({ id: "neis_" + g.sourceId, data: { name: g.name, category: g.category, dong: g.dong, address: g.address, phone: g.phone || "", target: "", shuttle: "모름", hours: "", fee: "", feeOfficial: clip(g.fee, 300), courses: clip(g.courses, 120), kind: clip(g.kind, 10), source: "neis", sourceId: g.sourceId, createdBy: S.user.uid, createdAt: t, updatedAt: t, updatedNick: "공공데이터(나이스)", hidden: false } }));
-      try { await BE.db.setMany("academies", items); done += items.length; }
-      catch (e) { failed += items.length; console.warn(e); }
-      toast(`${(done + failed).toLocaleString()} / ${n.add.length.toLocaleString()} 처리 중…`);
-    }
-    await BE.db.add("importLogs", { at: now(), uid: S.user.uid, nick: S.profile?.nick || "운영자", region: n.region, rows: n.rows, total: n.total, added: done, failed, existing: n.exist, blocked: n.blocked, closedSkipped: n.closed }).catch((e) => console.warn(e));
-    toast("학원 목록 묶음을 갱신하는 중…");
-    let idxOk = true; try { await rebuildIndex(); } catch (e) { idxOk = false; console.error(e); }
-    S.ui.neis = null; await refresh();
-    if (!idxOk) await ask(`${done.toLocaleString()}곳은 추가했지만 학원 목록 묶음 갱신에 실패했어요.\n관리자 › 통계 탭 «학원 목록 묶음»의 [지금 갱신하기]를 꼭 눌러 주세요. (안 하면 접속마다 읽기 건수가 크게 늘어요)`, "확인");
-    else toast(`${done.toLocaleString()}곳을 추가했어요${failed ? ` (실패 ${failed.toLocaleString()} — 다시 동기화하면 빠진 곳만 추가돼요)` : ""}`);
+    S.ui.syncing = true;
+    try {
+      // 1) 사전 점검: 묶음(publicIndex)을 쓸 수 있는지 먼저 확인.
+      //    묶음 갱신이 실패한 채 수천 곳을 넣으면, 접속할 때마다 새 학원 전부를 따로 읽어 무료 읽기 한도가 금방 바닥남.
+      toast("학원 목록 묶음 쓰기 권한을 확인하는 중…");
+      try { await rebuildIndex(); }
+      catch (e) { console.error(e); await ask(`학원 목록 묶음(publicIndex)을 저장하지 못해 추가를 멈췄어요.${e && e.code ? ` (${e.code})` : ""}\n\nFirebase 콘솔 › Firestore › 규칙 탭에 최신 firestore.rules 를 붙여넣고 [게시]한 뒤 다시 시도해 주세요.`, "확인"); return; }
+      // 2) 최신 DB와 다시 대조: 미리보기 이후 같은 학원이 들어왔으면 빼기 (set 덮어쓰기로 회원 수정 내용이 지워지는 것 방지)
+      let add = n.add;
+      const latest = await loadAcademies().catch(() => null);
+      if (latest) {
+        setAcademies(latest);
+        const ids = new Set(latest.map((a) => a.id)), src = new Set(latest.map((a) => a.sourceId).filter(Boolean)), names = new Set(latest.map((a) => normName(a.name) + "|" + (a.dong || "")));
+        add = add.filter((g) => !ids.has("neis_" + g.sourceId) && !src.has(g.sourceId) && !names.has(normName(g.name) + "|" + g.dong));
+      } else { await ask("최신 학원 목록을 확인하지 못해 추가를 멈췄어요. 잠시 후 다시 시도해 주세요.", "확인"); return; }
+      const late = n.add.length - add.length;
+      if (!add.length) { S.ui.neis = null; toast("그사이 모두 추가돼 있어요. 새로 넣을 학원이 없어요"); await refresh(); return; }
+      // 3) 400건씩 일괄 쓰기 (Firestore 한도 500). 실패한 묶음은 1.5초 뒤 한 번 더
+      let done = 0, failed = 0; const t = now(); const STEP = 400;
+      for (let i = 0; i < add.length; i += STEP) {
+        const items = add.slice(i, i + STEP).map((g) => ({ id: "neis_" + g.sourceId, data: { name: g.name, category: g.category, dong: g.dong, address: g.address, phone: g.phone || "", target: "", shuttle: "모름", hours: "", fee: "", feeOfficial: clip(g.fee, 300), courses: clip(g.courses, 120), kind: clip(g.kind, 10), source: "neis", sourceId: g.sourceId, createdBy: S.user.uid, createdAt: t, updatedAt: t, updatedNick: "공공데이터(나이스)", hidden: false } }));
+        let ok = false;
+        for (let tries = 0; tries < 2 && !ok; tries++) {
+          try { await BE.db.setMany("academies", items); ok = true; }
+          catch (e) { console.warn(`일괄 쓰기 실패 (${tries + 1}회)`, e); if (tries === 0) await sleep(1500); }
+        }
+        if (ok) done += items.length; else failed += items.length;
+        toast(`${(done + failed).toLocaleString()} / ${add.length.toLocaleString()} 처리 중…`);
+      }
+      await BE.db.add("importLogs", { at: now(), uid: S.user.uid, nick: S.profile?.nick || "운영자", region: n.region, rows: n.rows, total: n.total, added: done, failed, existing: n.exist + late, blocked: n.blocked, closedSkipped: n.closed }).catch((e) => console.warn(e));
+      // 4) 묶음 자동 갱신 → 일반 사용자는 다음 접속부터 새 학원을 묶음으로 받음
+      toast("학원 목록 묶음을 갱신하는 중…");
+      let idxOk = true; try { await rebuildIndex(); } catch (e) { idxOk = false; console.error(e); }
+      S.ui.neis = null; await refresh();
+      if (!idxOk) await ask(`${done.toLocaleString()}곳은 추가했지만 학원 목록 묶음 갱신에 실패했어요.\n관리자 › 통계 탭 «학원 목록 묶음»의 [지금 갱신하기]를 꼭 눌러 주세요. (안 하면 접속마다 읽기 건수가 크게 늘어요)`, "확인");
+      else toast(`${done.toLocaleString()}곳을 추가했어요${late ? ` (그사이 들어온 ${late}곳 제외)` : ""}${failed ? ` · 실패 ${failed.toLocaleString()} — 다시 동기화하면 빠진 곳만 추가돼요` : ""}`);
+    } finally { S.ui.syncing = false; }
   },
   acadClose: async (d) => {
     if (!(await ask("이 학원을 폐원 처리할까요?\n회원에게 숨겨지고, 후기는 보존돼요. 다음 동기화 때 다시 들어오지 않아요.", "폐원 처리"))) return;
@@ -1582,7 +1739,7 @@ const A = {
   rebuildIdx: async () => { toast("갱신 중…"); try { const n = await rebuildIndex(); toast(`${n.toLocaleString()}곳으로 갱신했어요`); await refresh(); } catch (e) { fail(e); } },
   acadRestore: async (d) => { try { await BE.db.update("academies", d.id, { hidden: false, closed: false }); await rebuildIndex().catch(() => {}); toast("복구했어요"); await refresh(); } catch (e) { fail(e); } },
   acadDelete: async (d) => {
-    const a = S.data.academies.find((x) => x.id === d.id); if (!a) return;
+    const a = acadGet(d.id); if (!a) return;
     const cnt = S.data.reviews.filter((r) => r.academyId === a.id).length;
     if (!(await ask(`'${a.name}'을(를) 완전히 삭제할까요?${cnt ? `\n이 학원 후기 ${cnt}개도 함께 삭제돼요.` : ""}\n되돌릴 수 없어요. 보통은 '폐원 처리'를 권해요.`, "완전 삭제", true))) return;
     try {
@@ -1604,20 +1761,30 @@ const A = {
 };
 async function saveSchedule() { try { await BE.db.set("schedules", S.user.uid, { children: S.data.schedule.children, updatedAt: now() }); closeModal(); render(); } catch (e) { fail(e); } }
 
+// 관리자 전용 동작·폼: 화면이 어떻게 열렸든 관리자가 아니면 실행하지 않음 (Firestore 규칙과 이중 방어)
+const ADMIN_ACTS = new Set(["hide", "adminDel", "repDone", "reqDone", "roomEdit", "roomDel", "neisOpen", "schoolSync", "artsSplit", "neisApply", "acadClose", "rebuildIdx", "acadRestore", "acadDelete", "exportAcadCsv", "adminTab"]);
+const ADMIN_FORMS = new Set(["room", "backup", "decrypt", "neisFetch", "neisFiles", "csvLoad", "csvImport"]);
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const f = A[el.dataset.act]; if (!f) return;
   if (el.dataset.act === "modalBg" && e.target !== el) return;
   if (el.tagName === "A") return;
   if (el.type !== "checkbox") e.preventDefault();
-  f(el.dataset, el, e);
+  if (ADMIN_ACTS.has(el.dataset.act) && !S.admin) return;
+  try { const r = f(el.dataset, el, e); if (r && typeof r.catch === "function") r.catch(fail); } catch (err) { fail(err); }
 });
 // 카드(div role=link)도 키보드 Enter로 열리게
 document.addEventListener("keydown", (e) => { if (e.key === "Enter" && e.target.matches('[role="link"][data-act]')) e.target.click(); });
+const inputT = {};
 document.addEventListener("input", (e) => {
   const k = e.target.dataset.input; if (!k) return;
-  if (k === "search") { S.ui.q = e.target.value.trim(); const box = $("#acadList"); if (box) box.innerHTML = acadListHtml(); }
-  if (k === "pick") { const f = e.target.closest("form, .modal") || document; const h = f.querySelector('[name="academyId"]'); if (h) h.value = ""; const box = f.querySelector("#pickList"); if (box) box.innerHTML = e.target.value.trim() ? pickListHtml(e.target.value) : ""; }
+  // 글자 칠 때마다 수천 곳을 다시 거르지 않도록 잠깐 기다렸다가(디바운스) 한 번만
+  if (k === "search") { const val = e.target.value.trim(); clearTimeout(inputT.search); inputT.search = setTimeout(() => { S.ui.q = val; S.ui.acadLimit = PAGE; refreshAcadList(); }, 180); }
+  if (k === "pick") {
+    const f = e.target.closest("form, .modal") || document; const h = f.querySelector('[name="academyId"]'); if (h) h.value = "";
+    const val = e.target.value; clearTimeout(inputT.pick);
+    inputT.pick = setTimeout(() => { const box = f.querySelector("#pickList"); if (box) box.innerHTML = val.trim() ? pickListHtml(val) : ""; }, 120);
+  }
 });
 document.addEventListener("change", (e) => {
   const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad", "grade"].includes(k)) return;
@@ -1632,6 +1799,7 @@ document.addEventListener("change", (e) => {
 document.addEventListener("submit", async (e) => {
   const form = e.target.closest("[data-form]"); if (!form) return;
   e.preventDefault();
+  if (ADMIN_FORMS.has(form.dataset.form) && !S.admin) return;
   const fd = new FormData(form); const v = (k) => clip(fd.get(k), 2000);
   const btn = form.querySelector('[type="submit"]'); if (btn) btn.disabled = true;
   try { await (F[form.dataset.form] || (() => {}))(form, fd, v); }
@@ -1645,7 +1813,7 @@ const pickGrades = (fd) => TGRADES.filter((g) => fd.getAll("targetGrades").inclu
 const tgChips = (a, max = 13) => { const g = a.targetGrades || []; if (!g.length) return a.target ? esc(a.target) : ""; return `<span class="tgs" style="gap:4px">${g.slice(0, max).map((x) => `<span class="gchip">${x}</span>`).join("")}${g.length > max ? `<span class="gchip">+${g.length - max}</span>` : ""}</span>`; };
 const cleanArea = (s) => clip([...new Set(String(s || "").split(/[,，·\/\n]+/).map((x) => normSchool(x)).filter(Boolean))].slice(0, 12).join(", "), 150);
 const F = {
-  async homeSearch(form, fd) { S.ui.q = clip(fd.get("q"), 40); go("academies"); },
+  async homeSearch(form, fd) { S.ui.q = clip(fd.get("q"), 40); S.ui.focusSearch = false; go("academies"); },
   async schoolFind(form, fd) { S.ui.school = clip(fd.get("school"), 20); render(); },
   async onboard(form, fd, v) {
     const grades = fd.getAll("grades"); if (!grades.length) { toast("아이 학년대를 하나 이상 골라 주세요"); return; }
@@ -1666,12 +1834,12 @@ const F = {
     else { closeModal(); go("academy", id); }
   },
   async gateStory(form, fd, v) {
-    const aid = v("academyId"); if (!aid) return;
+    const aid = v("academyId"); if (!aid) { toast("학원을 검색해서 골라 주세요"); return; }
     const lid = await BE.db.add("wikiLogs", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, ...(isStaff() ? { staff: true } : {}), type: "story", text: clip(v("text"), 800), at: now(), hidden: false });
     await markLog(lid); S.ui.reviewFor = aid; toast("고마워요! 이제 평가 하나만 남았어요"); await refresh();
   },
   async editAcad(form, fd, v) {
-    const a = S.data.full[form.dataset.id] || S.data.academies.find((x) => x.id === form.dataset.id);
+    const a = S.data.full[form.dataset.id] || acadGet(form.dataset.id);
     const fields = { category: "과목", dong: "동네", address: "주소", phone: "전화", shuttle: "셔틀", shuttleArea: "차량 오는 곳", hours: "수업 시간", fee: "수강료" };
     const patch = {}; const changes = [];
     const tg = pickGrades(fd), oldTg = a.targetGrades || [];
@@ -1710,11 +1878,12 @@ const F = {
     let preview = "";
     if (t === "review") { const r = S.data.reviews.find((x) => x.id === id); preview = r ? `${r.nick}: ${r.summary}\n${r.body || ""}` : ""; }
     if (t === "ride") { const r = S.data.rides.find((x) => x.id === id); preview = r ? `${r.nick}: ${acadName(r.academyId)} ${r.pickup} ${r.note || ""}` : ""; }
-    if (t === "academy") { const a = S.data.academies.find((x) => x.id === id); preview = a ? `${a.name} · ${a.address || a.dong || ""}` : ""; }
+    if (t === "academy") { const a = acadGet(id); preview = a ? `${a.name} · ${a.address || a.dong || ""}` : ""; }
     await BE.db.add("reports", { type: t, targetId: id, reason: fd.get("reason"), preview: clip(preview, 300), uid: S.user.uid, nick: S.profile.nick, at: now() });
     closeModal(); toast("신고가 접수됐어요. 운영자가 확인할게요");
   },
   async ride(form, fd, v) {
+    if (!v("academyId")) { toast("학원을 검색해서 골라 주세요"); return; }
     const days = fd.getAll("days"); if (!days.length) { toast("요일을 골라 주세요"); return; }
     const link = v("link"); if (link && !safeLink(link)) { toast("오픈채팅 링크는 https://open.kakao.com/ 으로 시작해야 해요"); return; }
     await BE.db.add("rides", { type: fd.get("type") === "need" ? "need" : "offer", uid: S.user.uid, nick: S.profile.nick, academyId: v("academyId"), days, time: v("time"), pickup: clip(v("pickup"), 40), dong: S.profile.dong, seats: Math.max(1, Math.min(6, Number(v("seats")) || 1)), note: clip(v("note"), 80), link: safeLink(link), joins: {}, trouble: [], createdAt: now() });
@@ -1856,7 +2025,8 @@ async function fetchSchools(key, office) {
   const out = [];
   for (let page = 1; page <= 5; page++) {
     const u = `https://open.neis.go.kr/hub/schoolInfo?KEY=${encodeURIComponent(key)}&Type=json&pIndex=${page}&pSize=1000&ATPT_OFCDC_SC_CODE=${office}&SCHUL_KND_SC_NM=${encodeURIComponent("초등학교")}`;
-    const j = await (await fetch(u)).json();
+    const res = await fetch(u); if (!res.ok) throw new Error("HTTP " + res.status);
+    const j = await res.json();
     if (j && j.RESULT) { if (j.RESULT.CODE === "INFO-200") break; throw new Error(j.RESULT.MESSAGE || j.RESULT.CODE); }
     const rows = (j.schoolInfo && j.schoolInfo[1] && j.schoolInfo[1].row) || [];
     rows.forEach((r) => out.push({ n: normSchool(r.SCHUL_NM), d: extractDong(`${r.ORG_RDNMA || ""} ${r.ORG_RDNDA || ""}`) }));
@@ -1867,9 +2037,10 @@ async function fetchSchools(key, office) {
 async function neisFetchAll(key, office, zone, onProgress) {
   const all = []; let total = Infinity;
   for (let page = 1; page <= 60 && all.length < total; page++) {
-    let j;
-    try { const r = await fetch(neisUrl(key, office, zone, page)); j = await r.json(); }
-    catch (e) { throw new Error("BLOCKED"); }
+    let r, j;
+    try { r = await fetch(neisUrl(key, office, zone, page)); } catch (e) { throw new Error("BLOCKED"); }
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    try { j = await r.json(); } catch (e) { throw new Error("응답이 JSON 이 아니에요 (인증키·교육청 코드를 확인해 주세요)"); }
     if (j && j.RESULT && j.RESULT.CODE === "INFO-200") break;
     const rows = neisRowsFromJson(j);
     const head = j.acaInsTiInfo[0].head; total = Number(head[0].list_total_count) || rows.length;
@@ -1894,7 +2065,7 @@ function neisMock() {
 function neisGroup(rows) {
   const m = new Map();
   rows.forEach((r) => {
-    const id = String(r.ACA_ASNUM || "").trim(); if (!id) return;
+    const id = String(r.ACA_ASNUM || "").trim().replace(/[^0-9A-Za-z_-]/g, ""); if (!id) return;   // 문서 id 로 쓰므로 안전한 글자만
     let g = m.get(id);
     if (!g) {
       const address = clip([r.FA_RDNMA, r.FA_RDNDA].filter(Boolean).join(" "), 80);
@@ -1909,21 +2080,26 @@ function neisGroup(rows) {
   return [...m.values()].map((g) => { const realm = [...g.realm].join(", "), courses = [...g.courses].join(", "); return { ...g, realm, courses, fee: [...g.fees].join(" / "), category: mapCat(g.name, courses + " " + realm) }; });
 }
 async function neisAnalyze(rows, region, filter, includeKyo) {
+  if (!S.admin) return;
   const groups = neisGroup(rows);
   const blk = (await BE.db.get("config", "importBlock").catch(() => null)) || {};
   const blocked = new Set(blk.ids || []);
-  const all = S.data.acadIndexed ? S.data.academies : await BE.db.list("academies").catch(() => S.data.academies);
+  // 관리자는 숨김·폐원 학원까지 포함한 전체 목록으로 대조 (묶음이 없으면 DB 전체)
+  const all = S.data.acadIndexed ? (S.data.allAcademies || S.data.academies) : await BE.db.list("academies").catch(() => S.data.allAcademies || S.data.academies);
   const ids = new Set(all.map((a) => a.id)), srcIds = new Set(all.map((a) => a.sourceId).filter(Boolean));
   const closedSrc = new Set(all.filter((a) => a.closed).map((a) => a.sourceId).filter(Boolean));
   const nameKeys = new Set(all.map((a) => normName(a.name) + "|" + (a.dong || "")));
   const words = String(filter || "").split(",").map((w) => w.trim()).filter(Boolean);
   const out = { region, rows: rows.length, total: groups.length, add: [], exist: 0, blocked: 0, closed: 0, kindSkip: 0, filtered: 0 };
+  const seen = new Set();   // 이번 불러오기 안에서 같은 고유번호·같은 이름+동이 두 번 들어가지 않게
   groups.forEach((g) => {
     if (words.length && !words.some((w) => g.address.includes(w))) { out.filtered++; return; }
     if (/폐원|휴원|말소|취소|폐지/.test(g.status)) { out.closed++; return; }
     if (!includeKyo && /교습소/.test(g.kind)) { out.kindSkip++; return; }
     if (blocked.has(g.sourceId) || blocked.has("name:" + normName(g.name) + "|" + g.dong) || closedSrc.has(g.sourceId)) { out.blocked++; return; }
-    if (ids.has("neis_" + g.sourceId) || srcIds.has(g.sourceId) || nameKeys.has(normName(g.name) + "|" + g.dong)) { out.exist++; return; }
+    const nk = normName(g.name) + "|" + g.dong;
+    if (ids.has("neis_" + g.sourceId) || srcIds.has(g.sourceId) || nameKeys.has(nk) || seen.has(g.sourceId) || seen.has(nk)) { out.exist++; return; }
+    seen.add(g.sourceId); seen.add(nk);
     out.add.push(g);
   });
   S.ui.neis = out; render();
@@ -1989,18 +2165,34 @@ async function decryptText(obj, pw) {
 /* =====================================================================
    시작
    ===================================================================== */
+window.addEventListener("unhandledrejection", (e) => console.warn("처리되지 않은 오류", e.reason));
 (async function start() {
   try { BE = DEMO ? makeLocalBackend() : await makeFirebaseBackend(); }
-  catch (e) { console.error(e); $("#app").innerHTML = `<div class="loading">연결에 실패했어요. 새로고침해 주세요.</div>`; return; }
+  catch (e) { console.error(e); $("#app").innerHTML = `<div class="loading">연결에 실패했어요. 새로고침해 주세요.<br><button class="btn" style="margin-top:12px" data-act="reload">새로고침</button></div>`; return; }
   countVisit();
+  // 학원 묶음은 로그인 확인을 기다리지 않고 바로 받기 시작
+  const publicP = loadPublic().then(() => true).catch((e) => { console.warn("공개 데이터 로드 실패", e); return false; });
   let first = true;
   BE.auth.onChange(async (u) => {
-    S.user = u; S.admin = isAdminUser(u); S.profile = null;
+    const seq = ++authSeq;
+    S.user = u; S.admin = isAdminUser(u); S.profile = null; S.memberReady = !u;
     S.data.myReviews = []; S.data.reviews = []; S.data.rides = []; S.data.rooms = []; S.data.schedule = null;
     if (u) { try { S.profile = await BE.db.get("users", u.uid); } catch (e) { console.warn(e); } }
-    await loadPublic(); await loadMember(); if (S.admin) syncRatings();
+    if (seq !== authSeq) return;
+    if (first) {
+      // 느린 모바일 망: 8초가 지나면 일단 화면을 띄우고, 목록은 도착하는 대로 다시 그림
+      const done = await Promise.race([publicP, sleep(8000).then(() => null)]);
+      if (done === null) { toast("연결이 느려요. 학원 목록을 계속 불러오는 중이에요"); publicP.then(() => { setAcademies(S.data.allAcademies); render(); }); }
+      // 묶음이 없는 상태에서 관리자로 들어오면 전체 목록을 다시 읽음
+      if (S.admin && done && !S.data.acadIndexed) await loadPublic(false).catch((e) => console.warn(e));
+    } else await loadPublic(false).catch((e) => console.warn(e));
+    if (seq !== authSeq) return;
+    setAcademies(S.data.allAcademies);   // 관리자 여부에 맞게 숨김 학원 다시 거르기
     S.ready = true;
     if (first) { first = false; route(); } else { if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
+    if (u && S.profile) {
+      loadMember().then(() => { if (seq !== authSeq) return; if (S.admin) { syncRatings(); maybeAutoIndex(); } render(); }).catch((e) => { console.warn(e); S.memberReady = true; render(); });
+    } else S.memberReady = true;
   });
 })();
 </script>
