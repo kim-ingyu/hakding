@@ -1630,8 +1630,8 @@ const A = {
   renameChild: () => { const k = S.data.schedule.children[S.ui.child]; modal(`<form class="col" data-form="child" data-i="${S.ui.child}"><h2>이름·색 바꾸기</h2><label class="f">별칭<input class="input" name="label" required maxlength="10" value="${esc(k.label)}"></label><fieldset><legend>색</legend><div class="row wrap">${COLORS.map((c) => `<label class="check"><input type="radio" name="color" value="${c}" ${k.color === c ? "checked" : ""}><span class="dot" style="width:22px;height:22px;border-radius:11px;background:${c}"></span></label>`).join("")}</div></fieldset><button class="btn lg block" type="submit">저장</button></form>`); },
   delChild: async () => { const sc = S.data.schedule; const k = sc.children[S.ui.child]; if (!(await ask(`${k.label}의 일정을 모두 삭제할까요?`, "삭제", true))) return; sc.children.splice(S.ui.child, 1); S.ui.child = 0; await saveSchedule(); },
   addItem: () => {
-    // 자동완성은 내가 평가한 학원 + 우리 동네 학원(최대 300곳)만 — 수천 개 option 은 모바일에서 무거움
-    const acs = [...new Set([...S.data.myReviews.map((r) => acadName(r.academyId)), ...S.data.academies.filter((a) => !a.hidden && a.dong === S.profile.dong).slice(0, 300).map((a) => a.name)])];
+    // 자동완성은 내가 평가한 학원 + 우리 동네 학원(최대 100곳)만 — 수천 개 option 은 모바일에서 무거움
+    const acs = [...new Set([...S.data.myReviews.map((r) => acadName(r.academyId)), ...S.data.academies.filter((a) => !a.hidden && a.dong === S.profile.dong).slice(0, 100).map((a) => a.name)])];
     modal(`<form class="col" data-form="item"><h2>일정 추가</h2>
       <label class="f">학원·활동 *<input class="input" name="title" required maxlength="30" list="acadNames" placeholder="예: 한빛수학학원"></label><datalist id="acadNames">${acs.map((n) => `<option value="${esc(n)}">`).join("")}</datalist>
       <fieldset><legend>요일 *</legend><div class="grid3" style="grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">${DAYS.map((d) => `<label class="check" style="flex-direction:column;align-items:center;gap:2px;padding:0"><input type="checkbox" name="days" value="${d}">${d}</label>`).join("")}</div></fieldset>
