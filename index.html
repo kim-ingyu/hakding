@@ -936,7 +936,7 @@ function reviewHtml(r) {
     <div class="row between"><span class="row">${starText(sc)}<b class="small">${r1(sc)}</b></span><span class="xs muted">${fmtDate(r.createdAt)}</span></div>
     <b>“${esc(r.summary)}”</b>
     ${r.body ? `<p class="small" style="white-space:pre-line">${esc(r.body)}</p>` : ""}
-    <div class="row wrap" style="gap:5px"><span class="badge">${esc(r.childGrade)}</span>${r.goal ? `<span class="badge">목표: ${esc(r.goal)}</span>` : ""}<span class="badge">${esc(r.period)}${r.current ? " · 다니는 중" : ""}</span></div>
+    <div class="row wrap" style="gap:5px">${r.childGrade ? `<span class="badge">${esc(r.childGrade)}</span>` : ""}${r.goal ? `<span class="badge">목표: ${esc(r.goal)}</span>` : ""}${r.period || r.current ? `<span class="badge">${esc(r.period)}${r.current ? " · 다니는 중" : ""}</span>` : ""}</div>
     <div class="xs muted">${ITEMS.map(([k, l]) => `${l} ${r.scores?.[k] ?? "-"}`).join(" · ")}</div>
     <div class="row between">
       <span class="small" style="font-weight:600">${esc(r.nick)}${r.hidden ? ' <span class="badge danger">숨김 처리됨</span>' : ""}</span>
@@ -1447,7 +1447,7 @@ async function loadSyncLogs() {
 function importHtml() {
   const c = S.ui.csv;
   setTimeout(loadSyncLogs, 0);
-  return neisHtml() + `
+  return neisHtml() + cafeHtml() + `
     <section class="card flat">
       <h3>CSV 파일로 가져오기 (대안)</h3>
       <p class="small muted">공공데이터포털 '전국학원및교습소표준데이터' CSV를 받아 올리면 학원 기본 정보를 한 번에 채워요. 지역 필터로 우리 시만 골라 주세요.</p>
@@ -1476,6 +1476,70 @@ function importHtml() {
         <button class="btn block" type="submit">가져오기 (기존 목록 교체)</button>
       </form>` : ""}
       <p class="xs muted">현재 ${S.data.apartments.length}개 등록됨</p>
+    </section>`;
+}
+/* ---------- 맘카페 정리 올리기 (관리자 전용, 2026-11-10)
+   정리한 CSV의 학원 이름을 사이트 학원과 맞춰, 로그인한 운영자 이름으로 후기(한 줄 요약·별점)를 한 번에 등록.
+   기존 reviews·academies 필드만 사용(규칙 변경 없음). 대상 학년은 비어 있는 학원에만 채움. ---------- */
+const CAFE_TAIL = /(수학과학|영수|영어|수학|과학|국어|논술|외국어|전문|영재|어학원|학원|공부방|교습소|센터|에듀)$/;
+function cafeCands(name, dong, cat) {
+  const base = String(name || "").replace(/\([^)]*\)/g, "").replace(/[\s·.,\-]/g, "");
+  let core = base;
+  while (CAFE_TAIL.test(core) && core.replace(CAFE_TAIL, "").length >= 2) core = core.replace(CAFE_TAIL, "");
+  const pool = S.data.academies.filter((a) => !a.closed && !a.hidden);
+  let list = base.length >= 2 ? pool.filter((a) => matchQ(a, base)) : [];
+  if (!list.length && core !== base) list = pool.filter((a) => matchQ(a, core));
+  const dOk = (a) => !!(dong && a.dong && (dong.includes(a.dong) || a.dong.includes(dong)));
+  list = list.map((a) => ({ a, d: dOk(a), s: (dOk(a) ? 2 : 0) + (a.category === cat ? 1 : 0) })).sort((x, y) => y.s - x.s);
+  const inDong = list.filter((x) => x.d);
+  // 같은 동에 한 곳뿐일 때만 자동 선택. 동을 모르거나 애매하면 운영자가 직접 고름
+  // (동이 다른 같은 이름 학원을 잘못 고르던 문제 수정: 자람→서동, 레벨업→복산동, 루체테→산하동 등)
+  return { list: list.slice(0, 30), pick: inDong.length === 1 ? inDong[0].a.id : "" };
+}
+function cafeRows(c) {
+  const hi = (re) => c.header.findIndex((h) => re.test(h));
+  const ix = { on: hi(/^올리기/), name: hi(/^학원명/), site: hi(/사이트 ?학원명/), id: hi(/학원 ?ID/i), dong: hi(/^동$/), cat: hi(/^분야/), sum: hi(/한 ?줄/), tg: hi(/대상 ?학년/), body: hi(/본문/), kind: hi(/^구분/), sh: hi(/^셔틀/), area: hi(/차량 ?오는/) };
+  const sc = ITEMS.map(([, l]) => hi(new RegExp("^" + l)));
+  const cell = (r, i) => (i >= 0 ? String(r[i] || "").trim() : "");
+  const mine = new Set(S.data.myReviews.map((r) => r.academyId));
+  return c.rows.map((r) => {
+    const name = cell(r, ix.name), site = cell(r, ix.site), dong = cell(r, ix.dong);
+    const m = cafeCands(site || name, dong, cell(r, ix.cat));
+    // '사이트 학원ID' 칸이 채워져 있으면 이름 검색보다 우선(미리 대조해 둔 결과를 그대로 사용)
+    const fixed = cell(r, ix.id) && S.data.academies.find((a) => a.id === cell(r, ix.id) && !a.closed && !a.hidden);
+    if (fixed) { m.list = [{ a: fixed }, ...m.list.filter((x) => x.a.id !== fixed.id)]; m.pick = fixed.id; }
+    const on = !/^(x|n|아니|제외)/i.test(cell(r, ix.on));
+    const tg = cell(r, ix.tg).split(/[,\s]+/);
+    return {
+      name, dong, kind: cell(r, ix.kind), on, cands: m.list, pick: on && !mine.has(m.pick) ? m.pick : "",
+      summary: clip(cell(r, ix.sum), 60), body: clip(cell(r, ix.body), 1500), grades: TGRADES.filter((g) => tg.includes(g)),
+      shuttle: SHUTTLE.includes(cell(r, ix.sh)) && cell(r, ix.sh) !== "모름" ? cell(r, ix.sh) : "", area: cleanArea(cell(r, ix.area)),
+      scores: Object.fromEntries(ITEMS.map(([k], j) => [k, Math.min(5, Math.max(1, Math.round(Number(cell(r, sc[j])) || 3)))]))
+    };
+  }).filter((x) => x.name);
+}
+function cafeHtml() {
+  const c = S.ui.csv; const on = !!(c && c.kind === "cafe"); const rows = on ? cafeRows(c) : [];
+  const mine = new Set(S.data.myReviews.map((r) => r.academyId));
+  return `
+    <section class="card flat">
+      <h3>맘카페 정리 올리기</h3>
+      <p class="small muted">정리한 CSV(학딩_맘카페_후기_올리기.csv)를 올리면 사이트 학원과 이름을 맞춰, 지금 로그인한 운영자 이름으로 후기(한 줄 요약·별점)를 한 번에 등록해요. 대상 학년·셔틀은 비어 있는 학원에만 채워요.</p>
+      <form class="col" data-form="csvLoad" data-kind="cafe">
+        <div class="grid2"><input class="input" type="file" name="file" accept=".csv" required><select class="input" name="enc"><option value="utf-8">UTF-8</option><option value="euc-kr">EUC-KR (엑셀 'CSV' 저장)</option></select></div>
+        <button class="btn ghost block" type="submit">파일 읽기</button>
+      </form>
+      ${on ? `<form class="col" data-form="cafeImport">
+        <p class="small"><b>${rows.length}</b>행 중 자동으로 맞춘 곳 <b>${rows.filter((r) => r.pick).length}</b>곳. 학원이 맞는지 확인하고, 올리지 않을 행은 '(올리지 않음)'으로 두세요.</p>
+        <div class="scroll-x"><table class="table"><thead><tr><th>정리한 이름</th><th>한 줄 요약 · 별점</th><th>사이트 학원</th></tr></thead><tbody>${rows.map((r, i) => `<tr>
+          <td><b>${esc(r.name)}</b><br><span class="xs muted">${esc(r.dong)}${r.on ? "" : " · 올리기 X"}</span></td>
+          <td class="small">${esc(r.summary) || '<span class="badge danger">요약 없음</span>'}<br><span class="xs muted">${ITEMS.map(([k]) => r.scores[k]).join(" · ")}${r.grades.length ? " / " + esc(r.grades.join(",")) : ""}${r.shuttle ? " / 셔틀 " + esc(r.shuttle) + (r.area ? "(" + esc(r.area) + ")" : "") : ""}</span></td>
+          <td><select class="input" name="m${i}" style="min-width:190px"><option value="">${r.cands.length ? "(올리지 않음)" : "(사이트에서 못 찾음)"}</option>${r.cands.map(({ a }) => `<option value="${esc(a.id)}" ${a.id === r.pick ? "selected" : ""} ${mine.has(a.id) ? "disabled" : ""}>${esc(a.name)} · ${esc(a.dong || "")}${mine.has(a.id) ? " (이미 내 후기 있음)" : ""}</option>`).join("")}</select></td>
+        </tr>`).join("")}</tbody></table></div>
+        <button class="btn block" type="submit">선택한 학원에 올리기</button>
+        <p class="xs muted">못 찾은 학원은 CSV의 '사이트 학원명' 칸에 사이트에 보이는 이름을 적고 다시 올리면 돼요. 이미 내 후기가 있는 학원은 건너뛰어서 여러 번 올려도 겹치지 않아요.</p>
+      </form>` : ""}
+      ${(() => { const n = S.data.reviews.filter((r) => r.seed).length; return n ? `<p class="small">지금 일괄로 올린 후기 <b>${n}</b>건이 있어요.</p><button class="btn ghost block" style="color:var(--danger,#B42318)" data-act="seedReset">일괄 올린 후기 모두 지우기</button><p class="xs muted">이 화면에서 올린 후기만 지워요. 회원이 쓴 후기와 운영자가 직접 쓴 후기, 채워 넣은 대상 학년·셔틀은 그대로 남아요.</p>` : ""; })()}
     </section>`;
 }
 function guessCol(k, h) {
@@ -1757,13 +1821,29 @@ const A = {
     const rows = [["학원명", "과목", "동네", "주소", "대상", "셔틀", "수업시간", "수강료", "후기수", ...ITEMS.map(([, l]) => l), "종합"]];
     fullList.forEach((a) => { const g = aggFor(a.id); rows.push([a.name, a.category, a.dong, a.address, a.target, a.shuttle, a.hours, a.fee, g.count, ...ITEMS.map(([k]) => (g.count ? r1(g.per[k]) : "")), g.count ? r1(g.overall) : ""]); });
     download("﻿" + rows.map((r) => r.map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`).join(",")).join("\r\n"), `학딩_학원목록_${ymd()}.csv`, "text/csv;charset=utf-8");
+  },
+  // 일괄 올린 후기 초기화: '맘카페 정리 올리기'로 넣은 후기(seed:true)만 지움. 회원 후기·운영자가 직접 쓴 후기는 그대로
+  seedReset: async () => {
+    try {
+      const list = await BE.db.list("reviews", ["seed", "==", true]);
+      if (!list.length) { toast("일괄로 올린 후기가 없어요"); return; }
+      if (!(await ask(`일괄로 올린 후기 ${list.length}건을 모두 지울까요?\n회원이 쓴 후기와 운영자가 직접 쓴 후기는 그대로 둬요.\n지우면 되돌릴 수 없어요.`, "모두 지우기"))) return;
+      let n = 0;
+      for (const r of list) { await BE.db.del("reviews", r.id); n++; if (n % 10 === 0) toast(`${n} / ${list.length} 지우는 중…`); }
+      // 운영자의 '첫 후기' 표시가 지운 후기를 가리키면 남은 내 후기로 옮김
+      if (S.profile && list.some((r) => r.id === S.profile.firstReviewId)) {
+        const keep = (await BE.db.list("reviews", ["uid", "==", S.user.uid]))[0];
+        await BE.db.update("users", S.user.uid, { firstReviewId: keep ? keep.id : "" }); S.profile.firstReviewId = keep ? keep.id : "";
+      }
+      toast(`일괄 올린 후기 ${n}건을 지웠어요`); await refresh();
+    } catch (e) { fail(e); }
   }
 };
 async function saveSchedule() { try { await BE.db.set("schedules", S.user.uid, { children: S.data.schedule.children, updatedAt: now() }); closeModal(); render(); } catch (e) { fail(e); } }
 
 // 관리자 전용 동작·폼: 화면이 어떻게 열렸든 관리자가 아니면 실행하지 않음 (Firestore 규칙과 이중 방어)
-const ADMIN_ACTS = new Set(["hide", "adminDel", "repDone", "reqDone", "roomEdit", "roomDel", "neisOpen", "schoolSync", "artsSplit", "neisApply", "acadClose", "rebuildIdx", "acadRestore", "acadDelete", "exportAcadCsv", "adminTab"]);
-const ADMIN_FORMS = new Set(["room", "backup", "decrypt", "neisFetch", "neisFiles", "csvLoad", "csvImport"]);
+const ADMIN_ACTS = new Set(["hide", "adminDel", "repDone", "reqDone", "roomEdit", "roomDel", "neisOpen", "schoolSync", "artsSplit", "neisApply", "acadClose", "rebuildIdx", "acadRestore", "acadDelete", "exportAcadCsv", "adminTab", "seedReset"]);
+const ADMIN_FORMS = new Set(["room", "backup", "decrypt", "neisFetch", "neisFiles", "csvLoad", "csvImport", "cafeImport"]);
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]"); if (!el) return;
   const f = A[el.dataset.act]; if (!f) return;
@@ -2002,6 +2082,33 @@ const F = {
       n++; if (n % 50 === 0) toast(`${n} / ${items.length} 가져오는 중…`);
     }
     await rebuildIndex().catch(() => {}); S.ui.csv = null; toast(`${n}곳을 가져왔어요`); await refresh();
+  },
+  // 맘카페 정리 올리기: 고른 학원마다 운영자 이름의 후기 1건 + (비어 있으면) 대상 학년
+  async cafeImport(form, fd) {
+    const c = S.ui.csv; if (!c || c.kind !== "cafe") return;
+    if (isStaff()) { toast("학원 관계자 계정은 후기를 남길 수 없어요"); return; }
+    const mine = new Set(S.data.myReviews.map((r) => r.academyId)); const seen = new Set();
+    const jobs = cafeRows(c).map((r, i) => ({ r, aid: String(fd.get("m" + i) || "") }))
+      .filter(({ r, aid }) => aid && r.summary && !mine.has(aid) && !seen.has(aid) && seen.add(aid));
+    if (!jobs.length) { toast("올릴 학원을 골라 주세요"); return; }
+    if (!(await ask(`${jobs.length}곳에 '${S.profile.nick}' 이름으로 후기를 등록할까요?`, "올리기"))) return;
+    let n = 0, g = 0;
+    for (const { r, aid } of jobs) {
+      await BE.db.add("reviews", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, indep: true, seed: true, createdAt: now(), updatedAt: now(), scores: r.scores, summary: r.summary, body: r.body, childGrade: "", period: "", goal: "", current: false });
+      // 학원 정보는 비어 있는 칸만 채움(회원이 이미 적은 값은 건드리지 않음)
+      const a = acadGet(aid); const patch = {}; const changes = [];
+      if (a && r.grades.length && !(a.targetGrades || []).length) { patch.targetGrades = r.grades; changes.push(`대상 학년: (없음) → ${r.grades.join(", ")}`); }
+      if (a && r.shuttle && (!a.shuttle || a.shuttle === "모름")) { patch.shuttle = r.shuttle; changes.push(`셔틀: 모름 → ${r.shuttle}`); }
+      if (a && r.area && !a.shuttleArea) { patch.shuttleArea = r.area; changes.push(`차량 오는 곳: (없음) → ${r.area}`); }
+      if (changes.length) {
+        await BE.db.update("academies", aid, { ...patch, updatedAt: now(), updatedNick: S.profile.nick });
+        await BE.db.add("wikiLogs", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, type: "edit", text: changes.join("\n"), at: now(), hidden: false });
+        g++;
+      }
+      n++; if (n % 10 === 0) toast(`${n} / ${jobs.length} 올리는 중…`);
+    }
+    if (g) await rebuildIndex().catch(() => {});
+    S.ui.csv = null; toast(`후기 ${n}건을 올렸어요${g ? ` · 학원 정보 ${g}곳` : ""}`); await refresh();
   }
 };
 async function markLog(lid) { if (!S.profile.firstLogId) { await BE.db.update("users", S.user.uid, { firstLogId: lid }); S.profile.firstLogId = lid; } }
