@@ -312,7 +312,7 @@ const r1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
 const safeLink = (u) => /^https:\/\/open\.kakao\.com\/[A-Za-z0-9_\-\/?=&.]+$/.test(String(u || "").trim()) ? String(u).trim() : "";
 const keys = (o) => Object.keys(o || {});
 const clip = (s, n) => String(s || "").trim().slice(0, n);
-// 후기 닉네임 가리기: 두 글자 '하늘' → '하*', 세 글자 이상 '서겸뤼파' → '서**파'
+// 닉네임 가리기(후기·메인 화면 공통): 두 글자 '하늘' → '하*', 세 글자 이상 '서겸뤼파' → '서**파'
 const maskNick = (s) => { const c = [...String(s || "")]; return c.length < 2 ? c.join("") : c.length === 2 ? c[0] + "*" : c[0] + "*".repeat(c.length - 2) + c[c.length - 1]; };
 const starText = (n) => { const f = Math.round(n); return `<span class="stars" aria-label="5점 만점에 ${r1(n)}점">${"★".repeat(f)}<span class="off">${"★".repeat(5 - f)}</span></span>`; };
 const icon = {
@@ -830,11 +830,11 @@ function vHome() {
         <div class="tabbar" style="width:150px"><button class="${S.ui.rankMode === "month" ? "on" : ""}" data-act="rank" data-m="month">이번 달</button><button class="${S.ui.rankMode === "all" ? "on" : ""}" data-act="rank" data-m="all">전체</button></div>
       </div>
       <p class="small muted">${esc(CONFIG.giftText)}</p>
-      <div>${rk.map((x, i) => `<div class="rank"><span class="n">${i + 1}</span><span class="grow" style="font-weight:600">${esc(x.uid === S.user.uid || S.admin ? x.nick : maskNick(x.nick))}</span><span class="row small" style="gap:4px;color:#C2410C">${icon.heartFill}<b>${x.likes}</b></span><span class="small muted">후기 ${x.reviews}</span></div>`).join("") || `<div class="empty">좋아요를 받은 후기가 아직 없어요</div>`}</div>
+      <div>${rk.map((x, i) => `<div class="rank"><span class="n">${i + 1}</span><span class="grow" style="font-weight:600">${esc(x.uid === S.user.uid ? x.nick : maskNick(x.nick))}</span><span class="row small" style="gap:4px;color:#C2410C">${icon.heartFill}<b>${x.likes}</b></span><span class="small muted">후기 ${x.reviews}</span></div>`).join("") || `<div class="empty">좋아요를 받은 후기가 아직 없어요</div>`}</div>
     </section>
     <section class="card">
       <div class="row between"><h2>최근 후기</h2></div>
-      ${recent.map((r) => `<button class="acad" style="flex-direction:column;align-items:flex-start;gap:4px" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}"><span class="small muted">${esc(acadName(r.academyId))}</span><span style="font-weight:600">“${esc(r.summary)}”</span><span class="row small">${starText(avg(ITEMS.map(([k]) => r.scores[k])))}<span class="muted">${esc(r.uid === S.user.uid || S.admin ? r.nick : maskNick(r.nick))}</span></span></button>`).join("") || `<div class="empty">아직 후기가 없어요</div>`}
+      ${recent.map((r) => `<button class="acad" style="flex-direction:column;align-items:flex-start;gap:4px" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}"><span class="small muted">${esc(acadName(r.academyId))}</span><span style="font-weight:600">“${esc(r.summary)}”</span><span class="row small">${starText(avg(ITEMS.map(([k]) => r.scores[k])))}<span class="muted">${esc(r.uid === S.user.uid ? r.nick : maskNick(r.nick))}</span></span></button>`).join("") || `<div class="empty">아직 후기가 없어요</div>`}
     </section>
     <section class="card">
       <div class="row between"><h2>우리 동네 모임방</h2><button class="link" data-act="nav" data-v="rooms">전체</button></div>
