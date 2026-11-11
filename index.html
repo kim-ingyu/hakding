@@ -247,7 +247,7 @@ const CONFIG = {
   contactEmail: "[운영자 연락 이메일]"
 };
 // 데모 모드: 설정 전이거나, PC에서 파일을 더블클릭해 열었거나(file://), 주소 끝에 ?demo=1 을 붙였을 때
-const DEMO = CONFIG.firebase.apiKey.startsWith("YOUR") || location.protocol === "file:" || new URLSearchParams(location.search).has("demo");
+const DEMO = CONFIG.firebase.apiKey.startsWith("YOUR") || location.protocol === "file:" || location.protocol === "data:" || new URLSearchParams(location.search).has("demo");
 let track = () => {};
 const DEMO_ADMIN_EMAIL = "admin@demo.local";
 
@@ -299,6 +299,8 @@ const r1 = (n) => (Math.round(n * 10) / 10).toFixed(1);
 const safeLink = (u) => /^https:\/\/open\.kakao\.com\/[A-Za-z0-9_\-\/?=&.]+$/.test(String(u || "").trim()) ? String(u).trim() : "";
 const keys = (o) => Object.keys(o || {});
 const clip = (s, n) => String(s || "").trim().slice(0, n);
+// 후기 닉네임 가리기: 두 글자 '하늘' → '하*', 세 글자 이상 '서겸뤼파' → '서**파'
+const maskNick = (s) => { const c = [...String(s || "")]; return c.length < 2 ? c.join("") : c.length === 2 ? c[0] + "*" : c[0] + "*".repeat(c.length - 2) + c[c.length - 1]; };
 const starText = (n) => { const f = Math.round(n); return `<span class="stars" aria-label="5점 만점에 ${r1(n)}점">${"★".repeat(f)}<span class="off">${"★".repeat(5 - f)}</span></span>`; };
 const icon = {
   spark: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.2 5.6L20 10l-5.8 1.4L12 17l-2.2-5.6L4 10l5.8-1.4z"/><path d="M19 16l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/></svg>',
@@ -707,11 +709,12 @@ function renderApp() {
   let v = S.view;
   const needLogin = ["rides", "rooms", "schedule", "me", "admin", "gate", "onboard", "review"];
   if (needLogin.includes(v) && !S.user) v = "login";
+  else if (S.user && S.banned && v !== "privacy") v = "banned";
   else if (S.user && !S.profile && v !== "privacy") v = "onboard";
   else if (S.user && S.profile && !passed() && !S.admin && !["privacy", "me", "gate", "review", "academy", "academies", "match"].includes(v)) v = "gate";
   if (v === "admin" && !S.admin) v = "home";
 
-  const views = { home: vHome, academies: vAcademies, academy: vAcademy, rides: vRides, rooms: vRooms, match: vMatch, schedule: vSchedule, me: vMe, admin: vAdmin, privacy: vPrivacy, login: vLogin, onboard: vOnboard, gate: vGate, review: vReviewForm };
+  const views = { home: vHome, academies: vAcademies, academy: vAcademy, rides: vRides, rooms: vRooms, match: vMatch, schedule: vSchedule, me: vMe, admin: vAdmin, privacy: vPrivacy, login: vLogin, banned: vBanned, onboard: vOnboard, gate: vGate, review: vReviewForm };
   const body = (views[v] || vHome)();
   const tab = { home: "home", academies: "academies", academy: "academies", match: "match", rides: "rides", schedule: "schedule" }[v] || "";
   app.innerHTML = `
@@ -939,7 +942,7 @@ function reviewHtml(r) {
     <div class="row wrap" style="gap:5px">${r.childGrade ? `<span class="badge">${esc(r.childGrade)}</span>` : ""}${r.goal ? `<span class="badge">목표: ${esc(r.goal)}</span>` : ""}${r.period || r.current ? `<span class="badge">${esc(r.period)}${r.current ? " · 다니는 중" : ""}</span>` : ""}</div>
     <div class="xs muted">${ITEMS.map(([k, l]) => `${l} ${r.scores?.[k] ?? "-"}`).join(" · ")}</div>
     <div class="row between">
-      <span class="small" style="font-weight:600">${esc(r.nick)}${r.hidden ? ' <span class="badge danger">숨김 처리됨</span>' : ""}</span>
+      <span class="small" style="font-weight:600">${esc(own || S.admin ? r.nick : maskNick(r.nick))}${r.hidden ? ' <span class="badge danger">숨김 처리됨</span>' : ""}</span>
       <span class="row" style="gap:2px">
         <button class="btn ghost sm" ${own ? "disabled" : ""} data-act="like" data-id="${esc(r.id)}" aria-pressed="${!!liked}" aria-label="좋아요">${liked ? icon.heartFill : icon.heart} ${keys(r.likes).length}</button>
         ${own ? `<button class="link" data-act="delReview" data-id="${esc(r.id)}">삭제</button>` : `<button class="link" style="color:var(--ink3)" data-act="report" data-type="review" data-id="${esc(r.id)}">신고</button>`}
@@ -992,6 +995,15 @@ function vLogin() {
     <h1>학딩 시작하기</h1>
     <p class="muted small">구글 계정으로 1초 만에 가입해요.<br>이메일은 로그인에만 쓰이고 다른 회원에게 보이지 않아요.</p>
     <button class="btn lg block" data-act="login">구글로 계속하기</button>
+    <button class="link small" data-act="nav" data-v="privacy">개인정보 처리방침 보기</button>
+  </section>`;
+}
+function vBanned() {
+  return `<section class="card" style="align-items:center;text-align:center;padding:28px 20px">
+    ${icon.lock}
+    <h1>이용이 제한된 계정이에요</h1>
+    <p class="muted small">운영 정책 위반으로 학딩 이용이 제한됐어요.<br>문의: ${esc(CONFIG.contactEmail)}</p>
+    <button class="btn ghost block" data-act="logout">로그아웃</button>
     <button class="link small" data-act="nav" data-v="privacy">개인정보 처리방침 보기</button>
   </section>`;
 }
@@ -1181,7 +1193,7 @@ function vRides() {
         ${tr.length ? `<div class="notice danger" style="padding:8px 12px">${icon.info}<span><b>갑자기 힘들어요</b> · ${tr.map((d) => (d === today ? "오늘" : md(d))).join(", ")}</span></div>` : ""}
         <b style="font-size:16px">${esc(acadName(r.academyId))}</b>
         <div class="small">${esc((r.days || []).join("·"))} ${esc(r.time)} · <b>픽업</b> ${esc(r.pickup)}</div>
-        <div class="small muted">${esc(r.nick)} · ${esc(r.dong)}${r.type === "offer" ? ` · 자리 ${jn.length}/${r.seats}` : ""}</div>
+        <div class="small muted">${esc(r.nick)} · ${esc(r.dong)}${r.type === "offer" ? ` · 자리 ${jn.length}/${Number(r.seats) || 1}` : ""}</div>
         ${r.note ? `<p class="small">${esc(r.note)}</p>` : ""}
         ${jn.length ? `<div class="xs muted">${r.type === "offer" ? "함께 타는 집" : "도와주겠다는 집"}: ${jn.map(esc).join(", ")}</div>` : ""}
         <div class="row wrap">
@@ -1319,16 +1331,21 @@ const vPrivacy = () => `<button class="link row" style="align-self:flex-start" d
 /* ---------- 관리자 ---------- */
 function vAdmin() {
   const t = S.ui.adminTab;
-  const tabs = [["stats", "통계"], ["reports", "신고"], ["rooms", "모임방"], ["import", "가져오기"], ["backup", "백업"]];
+  const tabs = [["stats", "통계"], ["members", "회원"], ["reports", "신고"], ["rooms", "모임방"], ["import", "가져오기"], ["backup", "백업"]];
   let body = "";
   if (t === "stats") {
     const d = S.data;
+    if (!S.ui.statsSynced) setTimeout(syncStats, 0);
     body = `<div class="grid2">${[["회원", d.stats.members || 0], ["학원", d.academies.length], ["후기", d.reviews.length], ["라이딩 글", d.rides.length], ["오늘 방문", d.today], ["누적 방문", d.stats.visits || 0], ["모임방", d.rooms.length], ["숨김 후기", d.reviews.filter((r) => r.hidden).length]].map(([l, n]) => `<div class="stat" style="border:1px solid var(--line)"><b>${Number(n).toLocaleString()}</b><span>${l}</span></div>`).join("")}</div>
       <section class="card flat"><h3>학원 목록 묶음</h3>
         <p class="small muted">${S.data.acadIndexed ? `${(S.data.indexMeta.count || 0).toLocaleString()}곳 · 마지막 갱신 ${fmtDate(S.data.indexMeta.builtAt)} · 이후 추가·수정 ${S.data.indexMeta.fresh}곳` : "아직 묶음이 없어요. 학원이 많으면 꼭 만들어 주세요."}</p>
         <p class="xs muted">접속할 때마다 학원 수천 곳을 한 건씩 읽지 않도록 목록을 묶어 둔 문서예요. 동기화·폐원 처리 때 자동으로 갱신되고, 회원 수정이 많이 쌓이면(100곳 이상) 직접 눌러 주세요.</p>
         <button class="btn ghost block" data-act="rebuildIdx">지금 갱신하기</button></section>
       <section class="card flat"><h3>동네별 라이딩 수요 (집계)</h3>${aggTable()}</section>`;
+  } else if (t === "members") {
+    body = `<input class="input" data-input="memberQ" placeholder="닉네임·동네·아파트로 찾기" value="${esc(S.ui.memberQ || "")}" aria-label="회원 검색">
+      <div id="adminMembers"><div class="empty">불러오는 중…</div></div>`;
+    setTimeout(loadMembers, 0);
   } else if (t === "reports") {
     body = `<div id="adminReports"><div class="empty">불러오는 중…</div></div>`; setTimeout(loadReports, 0);
   } else if (t === "rooms") {
@@ -1364,7 +1381,7 @@ function vAdmin() {
 }
 function aggTable() {
   const m = {};
-  S.data.rides.forEach((r) => { const k = `${r.dong}|${acadName(r.academyId)}|${r.time.slice(0, 2)}시`; m[k] = (m[k] || 0) + 1 + keys(r.joins).length; });
+  S.data.rides.forEach((r) => { const k = `${r.dong}|${acadName(r.academyId)}|${String(r.time || "").slice(0, 2)}시`; m[k] = (m[k] || 0) + 1 + keys(r.joins).length; });
   const rows = Object.entries(m).sort((a, b) => b[1] - a[1]);
   return rows.length ? `<div class="scroll-x"><table class="table"><thead><tr><th>동네</th><th>학원</th><th>시간대</th><th>가구</th></tr></thead><tbody>${rows.map(([k, n]) => `<tr>${k.split("|").map((x) => `<td>${esc(x)}</td>`).join("")}<td><b>${n}</b></td></tr>`).join("")}</tbody></table></div><p class="xs muted">개인을 알아볼 수 없는 합계예요. 학원 제휴·운송 제휴 영업 자료로 쓸 수 있어요.</p>` : `<div class="empty">데이터 없음</div>`;
 }
@@ -1380,6 +1397,58 @@ async function loadReports() {
         <button class="btn ghost sm" data-act="repDone" data-id="${esc(r.id)}">문제없음(신고 닫기)</button>
       </div></section>`).join("") : `<div class="empty">들어온 신고가 없어요</div>`;
 }
+// 통계 보정(관리자): 회원 수 = 실제 회원 문서 수, 누적 방문 = 날짜별 방문 합계보다 작으면 합계로
+async function syncStats() {
+  S.ui.statsSynced = true;
+  try {
+    const [users, stats] = await Promise.all([BE.db.list("users"), BE.db.list("stats")]);
+    const g = S.data.stats || {};
+    const daily = stats.filter((s) => /^d\d{8}$/.test(s.id)).reduce((t, s) => t + (s.visits || 0), 0);
+    const next = { visits: Math.max(g.visits || 0, daily), members: users.length };
+    if (next.visits === g.visits && next.members === g.members) return;
+    await BE.db.set("stats", "global", next);
+    S.data.stats = next;
+    if (S.view === "admin" && S.ui.adminTab === "stats") render();
+  } catch (e) { console.warn("통계 보정 실패", e); }
+}
+// 회원 관리(관리자): 회원 목록 + 강퇴 + 회원이 쓴 후기 관리
+async function loadMembers(reload = true) {
+  const box = $("#adminMembers"); if (!box) return;
+  if (reload || !S.ui.members) {
+    const [users, bans] = await Promise.all([BE.db.list("users").catch(() => []), BE.db.list("bans").catch(() => [])]);
+    S.ui.members = { users: users.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0)), bans: new Map(bans.map((b) => [b.id, b])) };
+  }
+  const { users, bans } = S.ui.members;
+  const q = String(S.ui.memberQ || "").replace(/\s/g, "");
+  const list = q ? users.filter((u) => [u.nick, u.dong, u.apt].join("").replace(/\s/g, "").includes(q)) : users;
+  const revBy = {}; S.data.reviews.forEach((r) => (revBy[r.uid] = revBy[r.uid] || []).push(r));
+  const rideN = {}; S.data.rides.forEach((r) => (rideN[r.uid] = (rideN[r.uid] || 0) + 1));
+  box.innerHTML = `<p class="small muted">회원 ${users.length.toLocaleString()}명${bans.size ? ` · 강퇴 ${bans.size}명` : ""}${q ? ` · 검색 결과 ${list.length}명` : ""}</p>` + (list.map((u) => {
+    const rs = (revBy[u.id] || []).sort((a, b) => b.createdAt - a.createdAt), ban = bans.get(u.id), open = S.ui.memberOpen === u.id;
+    return `<section class="card flat">
+      <div class="row between">
+        <div class="grow col" style="gap:2px">
+          <b>${esc(u.nick)}${u.staff ? STAFF_BADGE : ""}${ban ? ' <span class="badge danger">강퇴됨</span>' : ""}${u.id === S.user.uid ? ' <span class="badge accent">나</span>' : ""}</b>
+          <span class="xs muted">${esc(u.dong)}${u.apt ? " · " + esc(u.apt) : ""} · 가입 ${fmtDate(u.createdAt)} · 후기 ${rs.length} · 라이딩 ${rideN[u.id] || 0}${passedOf(u) ? "" : " · 이용 조건 미완료"}</span>
+        </div>
+        <button class="btn ghost sm" data-act="memberOpen" data-id="${esc(u.id)}">${open ? "접기" : "관리"}</button>
+      </div>
+      ${open ? `
+        ${ban ? `<p class="xs muted">강퇴일 ${fmtDate(ban.at)}${ban.reason ? " · 사유: " + esc(ban.reason) : ""}</p>` : ""}
+        <div class="row wrap">
+          ${u.id === S.user.uid ? "" : ban ? `<button class="btn ghost sm" data-act="memberUnban" data-id="${esc(u.id)}">강퇴 해제</button>` : `<button class="btn danger sm" data-act="memberBan" data-id="${esc(u.id)}">강퇴</button>`}
+          ${u.staff ? `<button class="btn ghost sm" data-act="memberUnstaff" data-id="${esc(u.id)}">학원 관계자 해제</button>` : ""}
+          ${rs.some((r) => !r.hidden) ? `<button class="btn warn sm" data-act="memberHideAll" data-id="${esc(u.id)}" data-h="1">후기 모두 숨김</button>` : ""}
+          ${rs.some((r) => r.hidden) ? `<button class="btn ghost sm" data-act="memberHideAll" data-id="${esc(u.id)}" data-h="0">후기 모두 복구</button>` : ""}
+        </div>
+        ${rs.length ? rs.map((r) => `<div class="list-item"><div class="grow"><b class="small">${esc(acadName(r.academyId))}</b>${r.hidden ? ' <span class="badge danger">숨김</span>' : ""}<div class="xs muted">${fmtDate(r.createdAt)} · “${esc(r.summary)}”</div></div>
+          <button class="link" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}">보기</button>
+          <button class="link" data-act="hide" data-col="reviews" data-id="${esc(r.id)}" data-h="${r.hidden ? "0" : "1"}">${r.hidden ? "복구" : "숨김"}</button>
+          <button class="link" style="color:var(--danger)" data-act="adminDel" data-col="reviews" data-id="${esc(r.id)}">삭제</button></div>`).join("") : `<div class="empty">쓴 후기가 없어요</div>`}` : ""}
+    </section>`;
+  }).join("") || `<div class="empty">회원이 없어요</div>`);
+}
+const passedOf = (u) => !!(u.staff ? u.firstLogId : u.firstReviewId);
 async function loadRoomReqs() {
   const box = $("#roomReqs"); if (!box) return;
   const rs = await BE.db.list("roomRequests").catch(() => []);
@@ -1800,6 +1869,30 @@ const A = {
     if (!(await ask("이 학원을 폐원 처리할까요?\n회원에게 숨겨지고, 후기는 보존돼요. 다음 동기화 때 다시 들어오지 않아요.", "폐원 처리"))) return;
     try { await BE.db.update("academies", d.id, { hidden: true, closed: true, closedAt: now() }); if (d.rep) await BE.db.del("reports", d.rep); await rebuildIndex().catch(() => {}); toast("폐원 처리했어요"); await refresh(); if (S.ui.adminTab === "reports" && S.view === "admin") loadReports(); } catch (e) { fail(e); }
   },
+  memberOpen: (d) => { S.ui.memberOpen = S.ui.memberOpen === d.id ? null : d.id; loadMembers(false); },
+  memberBan: async (d) => {
+    const u = (S.ui.members?.users || []).find((x) => x.id === d.id); if (!u || u.id === S.user.uid) return;
+    if (!(await ask(`'${u.nick}' 회원을 강퇴할까요?\n· 로그인해도 '이용 제한' 안내만 보여요\n· 이 회원의 후기는 모두 숨김, 라이딩 글은 삭제돼요\n· 다시 가입할 수 없어요 (강퇴 해제로 되돌릴 수 있어요)`, "강퇴", true))) return;
+    try {
+      await BE.db.set("bans", u.id, { at: now(), nick: u.nick, reason: "운영 정책 위반", by: S.user.uid });
+      for (const r of S.data.reviews.filter((r) => r.uid === u.id && !r.hidden)) await BE.db.update("reviews", r.id, { hidden: true });
+      for (const r of S.data.rides.filter((r) => r.uid === u.id)) await BE.db.del("rides", r.id);
+      toast("강퇴했어요"); await refresh();
+    } catch (e) { fail(e); }
+  },
+  memberUnban: async (d) => {
+    if (!(await ask("강퇴를 해제할까요?\n숨긴 후기는 그대로예요. 필요하면 '후기 모두 복구'를 눌러 주세요.", "해제"))) return;
+    try { await BE.db.del("bans", d.id); toast("강퇴를 해제했어요"); await refresh(); } catch (e) { fail(e); }
+  },
+  memberUnstaff: async (d) => {
+    if (!(await ask("학원 관계자 표시를 해제할까요? 이후 후기를 쓸 수 있게 돼요.", "해제"))) return;
+    try { await BE.db.update("users", d.id, { staff: false }); toast("해제했어요"); await refresh(); } catch (e) { fail(e); }
+  },
+  memberHideAll: async (d) => {
+    const h = d.h === "1", rs = S.data.reviews.filter((r) => r.uid === d.id && !!r.hidden !== h);
+    if (!rs.length || !(await ask(`이 회원의 후기 ${rs.length}개를 모두 ${h ? "숨길" : "복구할"}까요?`, h ? "모두 숨김" : "모두 복구", h))) return;
+    try { for (const r of rs) await BE.db.update("reviews", r.id, { hidden: h }); toast(h ? "숨겼어요" : "복구했어요"); await refresh(); } catch (e) { fail(e); }
+  },
   rebuildIdx: async () => { toast("갱신 중…"); try { const n = await rebuildIndex(); toast(`${n.toLocaleString()}곳으로 갱신했어요`); await refresh(); } catch (e) { fail(e); } },
   acadRestore: async (d) => { try { await BE.db.update("academies", d.id, { hidden: false, closed: false }); await rebuildIndex().catch(() => {}); toast("복구했어요"); await refresh(); } catch (e) { fail(e); } },
   acadDelete: async (d) => {
@@ -1842,7 +1935,7 @@ const A = {
 async function saveSchedule() { try { await BE.db.set("schedules", S.user.uid, { children: S.data.schedule.children, updatedAt: now() }); closeModal(); render(); } catch (e) { fail(e); } }
 
 // 관리자 전용 동작·폼: 화면이 어떻게 열렸든 관리자가 아니면 실행하지 않음 (Firestore 규칙과 이중 방어)
-const ADMIN_ACTS = new Set(["hide", "adminDel", "repDone", "reqDone", "roomEdit", "roomDel", "neisOpen", "schoolSync", "artsSplit", "neisApply", "acadClose", "rebuildIdx", "acadRestore", "acadDelete", "exportAcadCsv", "adminTab", "seedReset"]);
+const ADMIN_ACTS = new Set(["hide", "adminDel", "repDone", "reqDone", "roomEdit", "roomDel", "neisOpen", "schoolSync", "artsSplit", "neisApply", "acadClose", "rebuildIdx", "acadRestore", "acadDelete", "exportAcadCsv", "adminTab", "seedReset", "memberOpen", "memberBan", "memberUnban", "memberUnstaff", "memberHideAll"]);
 const ADMIN_FORMS = new Set(["room", "backup", "decrypt", "neisFetch", "neisFiles", "csvLoad", "csvImport", "cafeImport"]);
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-act]"); if (!el) return;
@@ -1860,6 +1953,7 @@ document.addEventListener("input", (e) => {
   const k = e.target.dataset.input; if (!k) return;
   // 글자 칠 때마다 수천 곳을 다시 거르지 않도록 잠깐 기다렸다가(디바운스) 한 번만
   if (k === "search") { const val = e.target.value.trim(); clearTimeout(inputT.search); inputT.search = setTimeout(() => { S.ui.q = val; S.ui.acadLimit = PAGE; refreshAcadList(); }, 180); }
+  if (k === "memberQ") { const val = e.target.value.trim(); clearTimeout(inputT.memberQ); inputT.memberQ = setTimeout(() => { S.ui.memberQ = val; loadMembers(false); }, 150); }
   if (k === "pick") {
     const f = e.target.closest("form, .modal") || document; const h = f.querySelector('[name="academyId"]'); if (h) h.value = "";
     const val = e.target.value; clearTimeout(inputT.pick);
@@ -1947,7 +2041,9 @@ const F = {
     if (S.data.myReviews.some((r) => r.academyId === aid)) { toast("이 학원은 이미 평가했어요. 내 후기를 수정해 주세요"); return; }
     if (isStaff()) { toast("학원 관계자는 후기를 남길 수 없어요"); return; }
     if (fd.get("indep") !== "on") { toast("이해관계가 없다는 확인에 체크해 주세요"); return; }
-    const id = await BE.db.add("reviews", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, indep: true, createdAt: now(), ...body });
+    // 문서 ID = 학원id_회원uid → 같은 학원에 두 번 쓰는 것을 규칙에서도 막음
+    const id = aid + "_" + S.user.uid;
+    await BE.db.set("reviews", id, { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, indep: true, createdAt: now(), ...body });
     if (!S.profile.firstReviewId) { await BE.db.update("users", S.user.uid, { firstReviewId: id }); S.profile.firstReviewId = id; }
     toast(form.dataset.gate === "1" ? "모든 기능이 열렸어요!" : "평가를 등록했어요");
     track(form.dataset.gate === "1" ? "gate_complete" : "review_create");
@@ -2007,7 +2103,7 @@ const F = {
     const pw = fd.get("pw") || "";
     if (!pw && !(await ask("암호 없이 저장하면 파일을 가진 누구나 회원·동선 정보를 볼 수 있어요. 계속할까요?", "암호 없이 저장", true))) return;
     toast("데이터를 모으는 중…");
-    const cols = { members: ["users", "schedules"], academies: ["academies", "reviews", "wikiLogs"], routes: ["rides"], etc: ["rooms", "reports", "roomRequests", "stats", "config"] };
+    const cols = { members: ["users", "schedules"], academies: ["academies", "reviews", "wikiLogs"], routes: ["rides"], etc: ["rooms", "reports", "roomRequests", "stats", "config", "bans"] };
     const out = { app: "hakding", exportedAt: new Date().toISOString(), groups, data: {} };
     for (const g of groups) for (const c of cols[g]) { out.data[c] = await BE.db.list(c); }
     const json = JSON.stringify(out, null, 1);
@@ -2094,7 +2190,7 @@ const F = {
     if (!(await ask(`${jobs.length}곳에 '${S.profile.nick}' 이름으로 후기를 등록할까요?`, "올리기"))) return;
     let n = 0, g = 0;
     for (const { r, aid } of jobs) {
-      await BE.db.add("reviews", { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, indep: true, seed: true, createdAt: now(), updatedAt: now(), scores: r.scores, summary: r.summary, body: r.body, childGrade: "", period: "", goal: "", current: false });
+      await BE.db.set("reviews", aid + "_" + S.user.uid, { academyId: aid, uid: S.user.uid, nick: S.profile.nick, likes: {}, hidden: false, indep: true, seed: true, createdAt: now(), updatedAt: now(), scores: r.scores, summary: r.summary, body: r.body, childGrade: "", period: "", goal: "", current: false });
       // 학원 정보는 비어 있는 칸만 채움(회원이 이미 적은 값은 건드리지 않음)
       const a = acadGet(aid); const patch = {}; const changes = [];
       if (a && r.grades.length && !(a.targetGrades || []).length) { patch.targetGrades = r.grades; changes.push(`대상 학년: (없음) → ${r.grades.join(", ")}`); }
@@ -2284,7 +2380,10 @@ window.addEventListener("unhandledrejection", (e) => console.warn("처리되지 
     const seq = ++authSeq;
     S.user = u; S.admin = isAdminUser(u); S.profile = null; S.memberReady = !u;
     S.data.myReviews = []; S.data.reviews = []; S.data.rides = []; S.data.rooms = []; S.data.schedule = null;
+    S.banned = false;
     if (u) { try { S.profile = await BE.db.get("users", u.uid); } catch (e) { console.warn(e); } }
+    // 강퇴된 계정: 제한 안내만 보여주고 회원 데이터는 읽지 않음
+    if (u && !S.admin) S.banned = !!(await BE.db.get("bans", u.uid).catch(() => null));
     if (seq !== authSeq) return;
     if (first) {
       // 느린 모바일 망: 8초가 지나면 일단 화면을 띄우고, 목록은 도착하는 대로 다시 그림
@@ -2296,8 +2395,8 @@ window.addEventListener("unhandledrejection", (e) => console.warn("처리되지 
     if (seq !== authSeq) return;
     setAcademies(S.data.allAcademies);   // 관리자 여부에 맞게 숨김 학원 다시 거르기
     S.ready = true;
-    if (first) { first = false; route(); } else { if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
-    if (u && S.profile) {
+    if (first) { first = false; route(); } else { if (S.banned) render(); else if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
+    if (u && S.profile && !S.banned) {
       loadMember().then(() => { if (seq !== authSeq) return; if (S.admin) { syncRatings(); maybeAutoIndex(); } render(); }).catch((e) => { console.warn(e); S.memberReady = true; render(); });
     } else S.memberReady = true;
   });
