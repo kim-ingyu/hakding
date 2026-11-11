@@ -7,8 +7,15 @@
 <meta name="description" content="학부모가 직접 쓰는 우리 동네 학원 후기, 학원 라이딩 품앗이, 아이 학원 스케줄러. since 2026">
 <meta name="theme-color" content="#0F5E5E">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230F5E5E'/%3E%3Cpath d='M14 44c8 0 10-10 18-10s10 10 18 10' stroke='%23FFD27A' stroke-width='5' fill='none' stroke-linecap='round'/%3E%3Ccircle cx='32' cy='22' r='7' fill='%23fff'/%3E%3C/svg%3E">
+<!-- 속도: Firebase·구글 서버에 미리 연결, 라이브러리 미리 받기, 한글 글꼴은 화면을 막지 않게(그동안 기기 기본 글꼴) -->
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js">
+<link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap" media="print" onload="this.media='all'">
 <style>
 :root{
   --brand:#0F5E5E;--brand-d:#0A4444;--brand-l:#DDEFEF;--accent:#F2B544;--accent-l:#FDF1D8;
@@ -195,6 +202,12 @@ footer.foot button{background:none;border:0;color:var(--ink3);text-decoration:un
 .zzan{font-size:28px;font-weight:800;color:var(--brand);text-align:center;animation:zzan .5s ease}
 /* ---- 성능: 화면 밖 카드는 그리지 않음, 움직임 줄이기 설정 존중 ---- */
 .acad-grid > .acad{content-visibility:auto;contain-intrinsic-size:auto 104px}
+/* ---- 학원 목록 페이지 번호 ---- */
+.pager{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;padding:6px 0}
+.pager button{min-width:38px;min-height:38px;padding:0 8px;border:1px solid transparent;border-radius:8px;background:none;color:var(--ink2);font-size:14px;cursor:pointer}
+.pager button:hover{background:#fff;border-color:var(--line)}
+.pager button.on{border-color:var(--brand);background:#fff;color:var(--brand);font-weight:700}
+.input.sm-select{width:auto;min-height:36px;padding:4px 10px;font-size:13px;border-radius:8px}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none !important;transition:none !important}}
 /* ---- PC(넓은 화면): 모바일 화면은 그대로, 900px 이상에서만 ---- */
 .home-grid,.detail-grid{display:flex;flex-direction:column;gap:14px}
@@ -288,7 +301,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const KO = new Intl.Collator("ko");
 const byName = (a, b) => KO.compare(a.name || "", b.name || "");
 const LOADING = `<div class="loading">불러오는 중…</div>`;
-const PAGE = 30;   // 학원 목록 한 번에 그리는 개수
+const PAGE_SIZES = [10, 20, 30, 50];   // 학원 목록 한 쪽에 보일 개수 (선택한 값은 이 기기에 기억)
 const ymd = (t = now()) => { const d = new Date(t); return d.getFullYear() + String(d.getMonth() + 1).padStart(2, "0") + String(d.getDate()).padStart(2, "0"); };
 const fmtDate = (t) => { if (!t) return ""; const d = new Date(t); return `${d.getFullYear()}.${d.getMonth() + 1}.${d.getDate()}`; };
 const md = (s) => { const [y, m, d] = s.split("-"); return `${Number(m)}/${Number(d)}`; };
@@ -414,13 +427,17 @@ async function makeFirebaseBackend() {
     const AC = await import(B + "firebase-app-check.js");
     AC.initializeAppCheck(app, { provider: new AC.ReCaptchaV3Provider(CONFIG.appCheckSiteKey), isTokenAutoRefreshEnabled: true });
   }
-  const auth = A.getAuth(app); const fs = F.getFirestore(app);
+  // 팝업 처리기를 미리 준비 → 버튼을 누르는 순간 바로 팝업이 열림 (사파리가 '사용자가 누른 것'으로 인정해 막지 않음)
+  const auth = A.initializeAuth(app, { persistence: [A.indexedDBLocalPersistence, A.browserLocalPersistence], popupRedirectResolver: A.browserPopupRedirectResolver });
+  const fs = F.getFirestore(app);
+  // 방문 분석은 화면이 다 뜬 뒤에 불러옴 (첫 화면 속도 우선)
   if (CONFIG.firebase.measurementId) {
-    import(B + "firebase-analytics.js").then(async (GA) => { if (await GA.isSupported()) { const ga = GA.getAnalytics(app); track = (name, params) => { try { GA.logEvent(ga, name, params || {}); } catch (e) {} }; } }).catch(() => {});
+    setTimeout(() => import(B + "firebase-analytics.js").then(async (GA) => { if (await GA.isSupported()) { const ga = GA.getAnalytics(app); track = (name, params) => { try { GA.logEvent(ga, name, params || {}); } catch (e) {} }; } }).catch(() => {}), 4000);
   }
   const ref = (c, id) => F.doc(fs, c, id);
-  // 리다이렉트 로그인 결과는 기다리지 않음(모바일 첫 화면이 늦어지지 않게). 결과는 onAuthStateChanged 로 들어옴
-  A.getRedirectResult(auth).catch((e) => console.warn(e));
+  // 리다이렉트 로그인을 했을 때만 결과 확인 (평소에는 로그인 iframe 을 띄우지 않아 첫 화면이 빨라짐)
+  let redirected = false; try { redirected = !!sessionStorage.getItem("hk_redirect"); sessionStorage.removeItem("hk_redirect"); } catch (e) {}
+  if (redirected) A.getRedirectResult(auth).catch((e) => console.warn(e));
   return {
     db: {
       async get(c, id) { const s = await F.getDoc(ref(c, id)); return s.exists() ? { id: s.id, ...s.data() } : null; },
@@ -439,7 +456,12 @@ async function makeFirebaseBackend() {
       async login() {
         const p = new A.GoogleAuthProvider(); p.setCustomParameters({ prompt: "select_account" });
         try { await A.signInWithPopup(auth, p); }
-        catch (e) { if (["auth/popup-blocked", "auth/operation-not-supported-in-this-environment", "auth/cancelled-popup-request"].includes(e.code)) await A.signInWithRedirect(auth, p); else if (e.code !== "auth/popup-closed-by-user") throw e; }
+        catch (e) {
+          // 아이폰 사파리는 리다이렉트 로그인이 자주 멈춤 → 팝업이 막히면 한 번 더 누르게 안내
+          if (e.code === "auth/popup-blocked") loginPrompt("팝업이 막혔어요. 아래 버튼을 한 번 더 눌러 주세요.");
+          else if (e.code === "auth/operation-not-supported-in-this-environment") { try { sessionStorage.setItem("hk_redirect", "1"); } catch (_) {} await A.signInWithRedirect(auth, p); }
+          else if (!["auth/popup-closed-by-user", "auth/cancelled-popup-request"].includes(e.code)) throw e;
+        }
       },
       logout: () => A.signOut(auth),
       async deleteAccount() { await A.deleteUser(auth.currentUser); }
@@ -455,7 +477,7 @@ const S = {
   ready: false, user: null, profile: null, admin: false,
   view: "home", param: null,
   data: { academies: [], full: {}, acadIndexed: false, indexMeta: null, reviews: [], rides: [], rooms: [], myReviews: [], stats: {}, today: 0, schedule: null, apartments: [] },
-  ui: { school: "", cat: "전체", dong: "전체", sort: "rating", q: "", acadTab: "reviews", rankMode: "month", rideAcad: "전체", child: 0, adminTab: "stats", gateMode: "new", reviewFor: "", editReview: null, csv: null }
+  ui: { acadPage: 1, acadSize: PAGE_SIZES.includes(Number(LS.get("hk_acad_size"))) ? Number(LS.get("hk_acad_size")) : 10, school: "", cat: "전체", dong: "전체", sort: "rating", q: "", acadTab: "reviews", rankMode: "month", rideAcad: "전체", child: 0, adminTab: "stats", gateMode: "new", reviewFor: "", editReview: null, csv: null }
 };
 const isStaff = () => !!(S.profile && S.profile.staff);
 // 이용 조건(2026-11-08 변경): 학원 후기 1개. 학원이 없으면 추가 후 후기. 관계자는 후기를 못 쓰므로 학원 정보 1개
@@ -656,7 +678,7 @@ function ranking(mode) {
   const m = {};
   visibleReviews().forEach((r) => {
     const n = Object.values(r.likes || {}).filter((t) => (typeof t === "number" ? t : 0) >= since).length;
-    if (!m[r.uid]) m[r.uid] = { nick: r.nick, likes: 0, reviews: 0 };
+    if (!m[r.uid]) m[r.uid] = { uid: r.uid, nick: r.nick, likes: 0, reviews: 0 };
     m[r.uid].likes += n; m[r.uid].reviews += 1;
   });
   return Object.values(m).filter((x) => x.likes > 0).sort((a, b) => b.likes - a.likes || b.reviews - a.reviews).slice(0, 5);
@@ -733,7 +755,6 @@ function renderApp() {
 }
 function afterRender() {
   if ($("#t3")) startT3();
-  wireMore();
   const q = $("#acadSearch"); if (q && S.ui.focusSearch) { q.focus(); q.setSelectionRange(q.value.length, q.value.length); S.ui.focusSearch = false; }
 }
 
@@ -809,11 +830,11 @@ function vHome() {
         <div class="tabbar" style="width:150px"><button class="${S.ui.rankMode === "month" ? "on" : ""}" data-act="rank" data-m="month">이번 달</button><button class="${S.ui.rankMode === "all" ? "on" : ""}" data-act="rank" data-m="all">전체</button></div>
       </div>
       <p class="small muted">${esc(CONFIG.giftText)}</p>
-      <div>${rk.map((x, i) => `<div class="rank"><span class="n">${i + 1}</span><span class="grow" style="font-weight:600">${esc(x.nick)}</span><span class="row small" style="gap:4px;color:#C2410C">${icon.heartFill}<b>${x.likes}</b></span><span class="small muted">후기 ${x.reviews}</span></div>`).join("") || `<div class="empty">좋아요를 받은 후기가 아직 없어요</div>`}</div>
+      <div>${rk.map((x, i) => `<div class="rank"><span class="n">${i + 1}</span><span class="grow" style="font-weight:600">${esc(x.uid === S.user.uid || S.admin ? x.nick : maskNick(x.nick))}</span><span class="row small" style="gap:4px;color:#C2410C">${icon.heartFill}<b>${x.likes}</b></span><span class="small muted">후기 ${x.reviews}</span></div>`).join("") || `<div class="empty">좋아요를 받은 후기가 아직 없어요</div>`}</div>
     </section>
     <section class="card">
       <div class="row between"><h2>최근 후기</h2></div>
-      ${recent.map((r) => `<button class="acad" style="flex-direction:column;align-items:flex-start;gap:4px" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}"><span class="small muted">${esc(acadName(r.academyId))}</span><span style="font-weight:600">“${esc(r.summary)}”</span><span class="row small">${starText(avg(ITEMS.map(([k]) => r.scores[k])))}<span class="muted">${esc(r.nick)}</span></span></button>`).join("") || `<div class="empty">아직 후기가 없어요</div>`}
+      ${recent.map((r) => `<button class="acad" style="flex-direction:column;align-items:flex-start;gap:4px" data-act="nav" data-v="academy" data-p="${esc(r.academyId)}"><span class="small muted">${esc(acadName(r.academyId))}</span><span style="font-weight:600">“${esc(r.summary)}”</span><span class="row small">${starText(avg(ITEMS.map(([k]) => r.scores[k])))}<span class="muted">${esc(r.uid === S.user.uid || S.admin ? r.nick : maskNick(r.nick))}</span></span></button>`).join("") || `<div class="empty">아직 후기가 없어요</div>`}
     </section>
     <section class="card">
       <div class="row between"><h2>우리 동네 모임방</h2><button class="link" data-act="nav" data-v="rooms">전체</button></div>
@@ -837,25 +858,30 @@ function acadListData() {
   withAgg.sort(sorters[show ? S.ui.sort : "name"]);
   return { show, withAgg };
 }
+// 학원 목록 페이지: 한 쪽에 N곳(10/20/30/50), 아래 페이지 번호 10개씩 묶음
+function acadPagerHtml(page, pages) {
+  if (pages <= 1) return "";
+  const g0 = Math.floor((page - 1) / 10) * 10 + 1, g1 = Math.min(pages, g0 + 9);
+  const nums = Array.from({ length: g1 - g0 + 1 }, (_, i) => g0 + i);
+  return `<nav class="pager" aria-label="학원 목록 페이지">
+    ${g0 > 1 ? `<button data-act="acadPage" data-p="${g0 - 1}">‹ 이전</button>` : ""}
+    ${nums.map((n) => `<button class="${n === page ? "on" : ""}" data-act="acadPage" data-p="${n}" ${n === page ? 'aria-current="page"' : ""}>${n}</button>`).join("")}
+    ${g1 < pages ? `<button data-act="acadPage" data-p="${g1 + 1}">다음 ›</button>` : ""}
+  </nav>`;
+}
 function acadListHtml() {
   const { show, withAgg } = acadListData();
-  const lim = S.ui.acadLimit || PAGE;
-  return `<p class="small muted" style="padding:0 2px">${withAgg.length.toLocaleString()}곳</p>
-    <div class="col acad-grid">${withAgg.slice(0, lim).map((x) => acadCard(x.a, show, true)).join("") || `<div class="empty">조건에 맞는 학원이 없어요</div>`}</div>
-    ${withAgg.length > lim ? `<button class="btn ghost block" data-act="moreAcad">더 보기 (${lim.toLocaleString()} / ${withAgg.length.toLocaleString()})</button>` : ""}`;
+  const size = S.ui.acadSize, pages = Math.max(1, Math.ceil(withAgg.length / size));
+  const page = (S.ui.acadPage = Math.min(Math.max(1, S.ui.acadPage || 1), pages));
+  const empty = S.data.acadLoading ? `<div class="empty">학원 목록을 불러오는 중…</div>` : `<div class="empty">조건에 맞는 학원이 없어요</div>`;
+  return `<div class="row between" style="padding:0 2px"><p class="small muted">${withAgg.length.toLocaleString()}곳${pages > 1 ? ` · ${page} / ${pages}쪽` : ""}</p>
+      <select class="input sm-select" data-input="acadSize" aria-label="한 쪽에 보일 학원 수">${PAGE_SIZES.map((n) => `<option value="${n}" ${n === size ? "selected" : ""}>${n}개 보기</option>`).join("")}</select></div>
+    <div class="col acad-grid">${withAgg.slice((page - 1) * size, page * size).map((x) => acadCard(x.a, show, true)).join("") || empty}</div>
+    ${acadPagerHtml(page, pages)}`;
 }
-function refreshAcadList() { const box = $("#acadList"); if (box) { box.innerHTML = acadListHtml(); wireMore(); } }
-// '더 보기' 버튼이 화면 가까이 오면 자동으로 다음 30곳
-let moreIO = null;
-function wireMore() {
-  if (moreIO) { moreIO.disconnect(); moreIO = null; }
-  const b = $('[data-act="moreAcad"]'); if (!b || !("IntersectionObserver" in window)) return;
-  moreIO = new IntersectionObserver((es) => { if (es.some((x) => x.isIntersecting)) { moreIO.disconnect(); moreIO = null; A.moreAcad(); } }, { rootMargin: "400px 0px" });
-  moreIO.observe(b);
-}
+function refreshAcadList() { const box = $("#acadList"); if (box) box.innerHTML = acadListHtml(); }
 function vAcademies() {
   const show = S.user && (passed() || S.admin);
-  S.ui.acadLimit = PAGE;   // 필터·정렬이 바뀌어 다시 그릴 때는 처음 30곳부터
   return `
     <section class="row between" style="padding:0 2px"><h1>학원 정보</h1>${S.user && (passed() || S.admin) ? `<button class="btn sm ghost" data-act="addAcad">학원 추가</button>` : ""}</section>
     ${isStaff() ? "" : `<section class="cta"><div class="col" style="gap:4px"><b>보내본 학원, 솔직한 후기를 남겨 주세요</b><span class="small">${esc(CONFIG.giftText)}</span></div><button class="btn lg block" data-act="reviewStart">✍️ 후기 쓰기</button></section>`}
@@ -1644,8 +1670,17 @@ function demoLoginPicker() {
 }
 const UA = navigator.userAgent || "";
 const IN_APP = /KAKAOTALK|NAVER\(inapp|DaumApps|daangn|Instagram|FBAN|FBAV|Line\/|; wv\)/i.test(UA);
+// 카카오톡에서 '구글로 시작하기' → 사파리·크롬으로 넘기면서 login=1 을 붙임 → 열리자마자 로그인 버튼 창을 띄움
+const WANT_LOGIN = new URLSearchParams(location.search).has("login");
+if (WANT_LOGIN) { try { history.replaceState(null, "", location.pathname + location.hash); } catch (e) {} }
+function loginPrompt(msg) {
+  modal(`<div class="col" style="align-items:center;text-align:center">${LOGO.replace('width="38" height="38"', 'width="56" height="56"')}<h2>학딩 시작하기</h2><p class="small muted">${esc(msg)}</p><button class="btn lg block" data-act="login">구글로 계속하기</button></div>`);
+}
 function inAppGuide() {
-  if (/KAKAOTALK/i.test(UA)) { location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(location.href); return true; }
+  if (/KAKAOTALK/i.test(UA)) {
+    const u = new URL(location.href); u.searchParams.set("login", "1");
+    location.href = "kakaotalk://web/openExternal?url=" + encodeURIComponent(u.toString()); return true;
+  }
   modal(`<h2>크롬·사파리에서 열어 주세요</h2><p class="small">카카오톡·당근·네이버 앱 안의 브라우저에서는 구글 로그인이 막혀 있어요. 오른쪽 위 메뉴(⋮)에서 <b>'다른 브라우저로 열기'</b>를 눌러 주세요.</p><button class="btn block" data-act="copyUrl">주소 복사하기</button>`);
   return true;
 }
@@ -1657,7 +1692,7 @@ const A = {
   nav: (d) => go(d.v, d.p),
   addAcad: () => modal(`<form class="col" data-form="newAcad"><h2>학원 추가</h2><p class="small muted">이미 있는 학원인지 검색해 보고 추가해 주세요.</p>${acadFormFields()}<button class="btn lg block" type="submit">등록</button></form>`),
   back: () => (history.length > 1 ? history.back() : go("home")),
-  login: async () => { if (!DEMO && IN_APP && inAppGuide()) return; try { await BE.auth.login(); } catch (e) { fail(e); } },
+  login: async () => { if (!DEMO && IN_APP && inAppGuide()) return; closeModal(); try { await BE.auth.login(); } catch (e) { fail(e); } },
   logout: async () => { await BE.auth.logout(); go("home"); },
   demoReset: async () => { if (await ask("데모 데이터를 처음 상태로 되돌릴까요?", "초기화")) BE.reset(); },
   demoAs: async (d) => {
@@ -1669,9 +1704,9 @@ const A = {
   closeModal, modalBg: (d, el, e) => { if (e.target === el) closeModal(); },
   policyModal: () => modal(policyHtml()),
   agreeAll: (d, el) => document.querySelectorAll(".agree").forEach((c) => (c.checked = el.checked)),
-  cat: (d) => { S.ui.cat = d.c; render(); },
+  cat: (d) => { S.ui.cat = d.c; S.ui.acadPage = 1; render(); },
   reload: () => location.reload(),
-  moreAcad: () => { S.ui.acadLimit = (S.ui.acadLimit || PAGE) + PAGE; refreshAcadList(); },
+  acadPage: (d) => { S.ui.acadPage = Number(d.p) || 1; refreshAcadList(); const box = $("#acadList"); if (box) window.scrollTo(0, Math.max(0, box.getBoundingClientRect().top + window.scrollY - 80)); },
   pickAcad: (d, el) => {
     const a = acadGet(d.id); if (!a) return;
     const f = el.closest("form");
@@ -1687,7 +1722,7 @@ const A = {
       <button class="link small" type="button" style="align-self:flex-start" data-act="addThenReview">찾는 학원이 없어요 → 학원 추가하고 후기 쓰기</button></div>`);
     setTimeout(() => { const i = document.querySelector('#layer [data-input="pick"]'); if (i) i.focus(); }, 50);
   },
-  schoolClear: () => { S.ui.school = ""; render(); },
+  schoolClear: () => { S.ui.school = ""; S.ui.acadPage = 1; render(); },
   mtPick: (d, el) => {
     const m = mtState(); m[d.k] = d.v;
     if (d.k === "mode") { const i = $("#mtDong"); m.dong = i ? clip(i.value.trim(), 20) : m.dong; }
@@ -1952,7 +1987,7 @@ const inputT = {};
 document.addEventListener("input", (e) => {
   const k = e.target.dataset.input; if (!k) return;
   // 글자 칠 때마다 수천 곳을 다시 거르지 않도록 잠깐 기다렸다가(디바운스) 한 번만
-  if (k === "search") { const val = e.target.value.trim(); clearTimeout(inputT.search); inputT.search = setTimeout(() => { S.ui.q = val; S.ui.acadLimit = PAGE; refreshAcadList(); }, 180); }
+  if (k === "search") { const val = e.target.value.trim(); clearTimeout(inputT.search); inputT.search = setTimeout(() => { S.ui.q = val; S.ui.acadPage = 1; refreshAcadList(); }, 180); }
   if (k === "memberQ") { const val = e.target.value.trim(); clearTimeout(inputT.memberQ); inputT.memberQ = setTimeout(() => { S.ui.memberQ = val; loadMembers(false); }, 150); }
   if (k === "pick") {
     const f = e.target.closest("form, .modal") || document; const h = f.querySelector('[name="academyId"]'); if (h) h.value = "";
@@ -1961,7 +1996,9 @@ document.addEventListener("input", (e) => {
   }
 });
 document.addEventListener("change", (e) => {
-  const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad", "grade"].includes(k)) return;
+  const k = e.target.dataset.input; if (!k || !["dong", "sort", "rideAcad", "grade", "acadSize"].includes(k)) return;
+  if (k === "acadSize") { S.ui.acadSize = Number(e.target.value) || 10; LS.set("hk_acad_size", String(S.ui.acadSize)); S.ui.acadPage = 1; refreshAcadList(); return; }
+  if (k !== "rideAcad") S.ui.acadPage = 1;
   if (k === "grade") S.ui.grade = e.target.value;
   if (k === "dong") S.ui.dong = e.target.value;
   if (k === "sort") S.ui.sort = e.target.value;
@@ -1988,7 +2025,7 @@ const tgChips = (a, max = 13) => { const g = a.targetGrades || []; if (!g.length
 const cleanArea = (s) => clip([...new Set(String(s || "").split(/[,，·\/\n]+/).map((x) => normSchool(x)).filter(Boolean))].slice(0, 12).join(", "), 150);
 const F = {
   async homeSearch(form, fd) { S.ui.q = clip(fd.get("q"), 40); S.ui.focusSearch = false; go("academies"); },
-  async schoolFind(form, fd) { S.ui.school = clip(fd.get("school"), 20); render(); },
+  async schoolFind(form, fd) { S.ui.school = clip(fd.get("school"), 20); S.ui.acadPage = 1; render(); },
   async onboard(form, fd, v) {
     const grades = fd.getAll("grades"); if (!grades.length) { toast("아이 학년대를 하나 이상 골라 주세요"); return; }
     const p = { nick: clip(v("nick"), 12), dong: clip(v("dong"), 20), apt: clip(v("apt"), 30), grades, staff: fd.get("staff") === "on", agreedAt: now(), policyVersion: CONFIG.policyVersion, createdAt: now(), firstReviewId: "", firstLogId: "" };
@@ -2372,30 +2409,33 @@ window.addEventListener("unhandledrejection", (e) => console.warn("처리되지 
 (async function start() {
   try { BE = DEMO ? makeLocalBackend() : await makeFirebaseBackend(); }
   catch (e) { console.error(e); $("#app").innerHTML = `<div class="loading">연결에 실패했어요. 새로고침해 주세요.<br><button class="btn" style="margin-top:12px" data-act="reload">새로고침</button></div>`; return; }
-  countVisit();
-  // 학원 묶음은 로그인 확인을 기다리지 않고 바로 받기 시작
-  const publicP = loadPublic().then(() => true).catch((e) => { console.warn("공개 데이터 로드 실패", e); return false; });
+  setTimeout(countVisit, 1500);   // 방문 집계는 첫 화면이 뜬 뒤에
+  // 학원 묶음은 로그인 확인을 기다리지 않고 바로 받기 시작. 화면은 기다리지 않고 먼저 띄우고, 도착하면 다시 그림
+  S.data.acadLoading = true;
+  let pubDone = false, adminFull = false;
+  // 묶음이 없는 상태에서 관리자로 들어오면 전체 목록을 다시 읽음 (뒤에서)
+  const adminFullIfNeeded = () => {
+    if (!S.admin || !pubDone || adminFull || S.data.acadIndexed) return;
+    adminFull = true; loadPublic(false).then(() => { setAcademies(S.data.allAcademies); if (S.ready) render(); }).catch((e) => console.warn(e));
+  };
+  loadPublic().catch((e) => { console.warn("공개 데이터 로드 실패", e); toast("학원 목록을 불러오지 못했어요. 새로고침해 주세요"); })
+    .finally(() => { pubDone = true; S.data.acadLoading = false; setAcademies(S.data.allAcademies); if (S.ready) render(); adminFullIfNeeded(); });
   let first = true;
   BE.auth.onChange(async (u) => {
     const seq = ++authSeq;
     S.user = u; S.admin = isAdminUser(u); S.profile = null; S.memberReady = !u;
     S.data.myReviews = []; S.data.reviews = []; S.data.rides = []; S.data.rooms = []; S.data.schedule = null;
     S.banned = false;
-    if (u) { try { S.profile = await BE.db.get("users", u.uid); } catch (e) { console.warn(e); } }
-    // 강퇴된 계정: 제한 안내만 보여주고 회원 데이터는 읽지 않음
-    if (u && !S.admin) S.banned = !!(await BE.db.get("bans", u.uid).catch(() => null));
-    if (seq !== authSeq) return;
-    if (first) {
-      // 느린 모바일 망: 8초가 지나면 일단 화면을 띄우고, 목록은 도착하는 대로 다시 그림
-      const done = await Promise.race([publicP, sleep(8000).then(() => null)]);
-      if (done === null) { toast("연결이 느려요. 학원 목록을 계속 불러오는 중이에요"); publicP.then(() => { setAcademies(S.data.allAcademies); render(); }); }
-      // 묶음이 없는 상태에서 관리자로 들어오면 전체 목록을 다시 읽음
-      if (S.admin && done && !S.data.acadIndexed) await loadPublic(false).catch((e) => console.warn(e));
-    } else await loadPublic(false).catch((e) => console.warn(e));
+    // 프로필·강퇴 여부를 동시에 확인 (강퇴된 계정: 제한 안내만 보여주고 회원 데이터는 읽지 않음)
+    if (u) {
+      const [p, ban] = await Promise.all([BE.db.get("users", u.uid).catch((e) => { console.warn(e); return null; }), S.admin ? null : BE.db.get("bans", u.uid).catch(() => null)]);
+      S.profile = p; S.banned = !!ban;
+    }
     if (seq !== authSeq) return;
     setAcademies(S.data.allAcademies);   // 관리자 여부에 맞게 숨김 학원 다시 거르기
     S.ready = true;
-    if (first) { first = false; route(); } else { if (S.banned) render(); else if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
+    adminFullIfNeeded();
+    if (first) { first = false; route(); if (WANT_LOGIN && !u && !DEMO) loginPrompt("카카오톡에서 넘어왔어요. 버튼을 누르면 바로 로그인돼요."); } else { if (S.banned) render(); else if (u && !S.profile) go("onboard"); else if (u && !passed() && !S.admin) go("gate"); else render(); }
     if (u && S.profile && !S.banned) {
       loadMember().then(() => { if (seq !== authSeq) return; if (S.admin) { syncRatings(); maybeAutoIndex(); } render(); }).catch((e) => { console.warn(e); S.memberReady = true; render(); });
     } else S.memberReady = true;
